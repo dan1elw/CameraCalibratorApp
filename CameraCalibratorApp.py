@@ -4,18 +4,19 @@
 '''
 Camera Calibrator App
 
-Created by Daniel Weber. Copyright 2020
-Technische Hochschule Mittelhessen
-Version 1.1
+Created by Daniel Weber. Copyright 2022
+Version 1.2
 
-GUI zur einfachen Kalibrierung einer Single- oder Stereokamera. Kalibrierung
-erfolgt dabei durch die Funktionen der OpenCV Bibliothek, welche auf den 
-theoretischen Grundlagen des Zhang-Verfahrens beruhen. Ausgabe der Parameter
-in einer Numpy-Datei um ein weiteres Verwenden dieser möglich zu machen.
+This application provides a GUI for an easy calibration of a single or stereo camera.
+Calibration takes place trough the functions of the OpenCV library, which is
+based on the theoreticle priciples of the Zhang-Calibration process. 
 
-Anwendung benötigt als Eingabeparameter zwei unabhängige Ordner mit den
-Kalibrierungsbildern sowie die Square Size des Schachbrettmusters. Weitere
-Informationen zur richtigen Verwendung im Menü unter Help.
+The calculated Calibration-Parameters can be saved in a Numpy file to make 
+further usage possible.
+
+The application requires two independent folders with the Calibration-Images
+as well as the square size of the checkerboard pattern. Further Information 
+on correct use in the Help-Menu or in the Readme.
 '''
 
 #####################################################################################################################
@@ -30,24 +31,24 @@ import cv2
 import numpy as np
 np.set_printoptions(suppress=True, precision=5)
 
-# %% ################################################################################################################
-# Klasse App:
-# Diese Klasse dient der Erstellung der Graphischen Benutzeroberfläche.
-# Hier wird der Dateninput abgewickelt und die Kalibrierung angestossen.
-# Ebenso erfolgt in einer Konsole die "live" Ausgabe der Ergebnisse.
+####################################################################################################################
+# Class App:
+# in this class we create the graphical user interface
+# handle the data input for the calibration
+# plot the results live
 #####################################################################################################################
 
 class App():
+    ''' Main Application '''
+    
     def __init__(self, master):
-        ''' 
-        Diese Funktion dient der Initialisierung der GUI-Anwendung.
-        Festsetzung der Geometrie und des standardmässigen Textinhaltes.
-        '''
+        ''' Initialising the GUI '''
         self.master = master
         self.master.title('Camera Calibrator App')
         self.master.resizable(0,0)
-        self.timestopper = 0; self.timepause = 0.02
-        self.VERSIONINDEX = '1.1' # Versions-Index
+        self.timestopper = 0
+        self.timepause = 0.02
+        self.VERSIONINDEX = '1.1' # Version-Index
         
         # DEFINE AREA's
         self.console = ttk.Frame(master)
@@ -58,35 +59,35 @@ class App():
         self.horizontal = ttk.PanedWindow(self.vertical, orient=HORIZONTAL)
         self.vertical.add(self.horizontal)
         
-        self.formframe = ttk.Labelframe(self.horizontal, text='Eingabe')
+        self.formframe = ttk.Labelframe(self.horizontal, text='')
         self.formframe.columnconfigure(1, weight=1)
         self.horizontal.add(self.formframe, weight=1)
         
-        self.console = ttk.Labelframe(self.horizontal, text='Ausgabefenster')
+        self.console = ttk.Labelframe(self.horizontal, text='')
         self.console.columnconfigure(0, weight=1)
         self.console.rowconfigure(0, weight=1)
         self.horizontal.add(self.console, weight=1)
         
         # INPUT
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=0, column=0, sticky='nw')
-        ttk.Label(self.formframe, text='Angabe der Ordner:', font='TkDefaultFont 12 bold').grid(row=10, column=0, columnspan=3, sticky='nw')
+        ttk.Label(self.formframe, text='Directories:', font='TkDefaultFont 12 bold').grid(row=10, column=0, columnspan=3, sticky='nw')
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=11, column=0, sticky='nw')
-        ttk.Label(self.formframe, text='Linke Kamera:                ').grid(row=15, column=0, sticky='w')
+        ttk.Label(self.formframe, text='left camera:                ').grid(row=15, column=0, sticky='w')
         self.InputButtonLeft = ttk.Button(self.formframe, text='Durchsuchen', command=self.InputLeft)
         self.InputButtonLeft.grid(row=15,column=1,sticky='nw')
-        ttk.Label(self.formframe, text='Rechte Kamera:').grid(row=16, column=0 ,sticky='w')
+        ttk.Label(self.formframe, text='right camera:').grid(row=16, column=0 ,sticky='w')
         self.InputButtonRight = ttk.Button(self.formframe, text='Durchsuchen', command=self.InputRight)
         self.InputButtonRight.grid(row=16,column=1,sticky='nw')
         
         ttk.Label(self.formframe, text=' ').grid(row=20, column=0 ,sticky='nw')
-        ttk.Label(self.formframe, text='Schachbrettmuster:', font='TkDefaultFont 12 bold').grid(row=21, column=0, columnspan=3, sticky='nw')
+        ttk.Label(self.formframe, text='Checkerboard:', font='TkDefaultFont 12 bold').grid(row=21, column=0, columnspan=3, sticky='nw')
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=22, column=0, sticky='nw')
         ttk.Label(self.formframe, text='Square Size [mm]:').grid(row=25, column=0 ,sticky='nw')
         self.entry = tkinter.DoubleVar(); self.entry.set(30.0)
         tkinter.Entry(self.formframe, textvariable=self.entry, justify='right', width=12).grid(row=25,column=1,sticky='nw',columnspan=8)
         
         ttk.Label(self.formframe, text=' ').grid(row=30, column=0 ,sticky='nw')
-        ttk.Label(self.formframe, text='Kalibrierung:', font='TkDefaultFont 12 bold').grid(row=31, column=0, sticky='w')
+        ttk.Label(self.formframe, text='Calibration:', font='TkDefaultFont 12 bold').grid(row=31, column=0, sticky='w')
         self.InputButtonStart = ttk.Button(self.formframe, text=' Start ', command=self.StartButton)
         self.InputButtonStart.grid(row=31,column=1, sticky='nw')
         ttk.Label(self.formframe, text=' ').grid(row=31, column=2 ,sticky='nw')
@@ -112,15 +113,12 @@ class App():
         self.Art = ''
         self.CalibrationCompleted = False
         self.CalBegonnen = False
-        
-#####################################################################################################################        
-# CONSOLE
 
     def Insert(self, text, pause=0, form='normal'):
         '''
-        Funktion zum Plotten von Text innerhalb des Konsolenfensters.
-        Error-Meldungen werden rot ausgegeben.
-        Die Fähigkeit zu Schreiben im Fenster ist für den Benutzer deaktiviert.
+        function to plot some text into the console.
+        errors are red
+        writing in the window is disabled.
         '''
         self.scrollarea.configure(state='normal')
         if text[:7] == '[ERROR]':
@@ -132,66 +130,59 @@ class App():
         self.scrollarea.yview(tkinter.END)
         self.scrollarea.update()
         
-        # Bei der Ausgabe wird immer eine gewisse zeit gewartet, dass die Ausgabe
-        # im Fenster flüssiger wirkt. Ansonsten wird immer der ganze Block gleichzeitig ausgegeben.
+        # waiting a little bit for smoother output
         if pause == 0:
             self.timestopper += 1
             time.sleep(self.timepause)
         
     def ClearConsole(self):
-        '''
-        Diese Funktion setzt das Konsolenfenster zurück.
-        Der Header wird wieder hergestellt.
-        '''
+        ''' reset the console to default. '''
         self.scrollarea.configure(state='normal')
         self.scrollarea.delete('1.0', tkinter.END)
         self.Insert("--------------------------------------------------------------------",1)
-        self.Insert("Camera Calibrator App\nCreated by Daniel Weber. Copyright 2020. Version {}\nTechnische Hochschule Mittelhessen".format(self.VERSIONINDEX),1)
-        self.Insert("--------------------------------------------------------------------\n\nTime: {}\n".format(time.strftime('%d.%m.%Y , %H:%M:%S Uhr')),1)
+        self.Insert("Camera Calibrator App\n\nCreated by dan1elw.\nhttps://github.com/dan1elw\nCopyright 2022. Version {}".format(self.VERSIONINDEX),1)
+        self.Insert("--------------------------------------------------------------------\n",1)
+        self.Insert("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
         self.scrollarea.configure(state='disabled')
         self.scrollarea.update()
 
-#####################################################################################################################
-# MENÜ
-
     def createMenu(self):
         '''
-        Erstellung der Menu Leiste. Dort exisiteren folgende Reiter:
-        Options: Speichern der Parameter oder des Protokolls, Neue Kalibrierung, Beenden der Anwendung.
-        Help: About und Hilfe zur Anwendung
+        create the menu of the application
+        with options for saving, new calibration and exit
+        also a help and about function
         '''
         menu = tkinter.Menu(self.master, tearoff=False)
         self.master.config(menu=menu)
 
-        # Options Menü. Speichern, Neue Kalibrierung und Beenden.
+        # OPTIONS
         filemenu = tkinter.Menu(menu, tearoff=False)
         menu.add_cascade(label='Options', menu=filemenu)
         filemenu.add_command(label='Save Parameters', command=self.MENUSaveParams)
-        filemenu.add_command(label='Save Protokoll', command=self.MENUSaveConsole)
+        filemenu.add_command(label='Save Log', command=self.MENUSaveConsole)
         filemenu.add_command(label='New Calibration', command=self.MENUNewCalibration)
         filemenu.add_separator()
-        filemenu.add_command(label='Beenden', command=self.master.destroy)
+        filemenu.add_command(label='Exit App', command=self.master.destroy)
         
-        # Help Menü mit Hilfestellungen zur richtigen Verwendung der App.
+        # HELP
         filemenu = tkinter.Menu(menu, tearoff=False)
         menu.add_cascade(label='Help', menu=filemenu)
         filemenu.add_command(label='About', command=self.MENUAbout)
-        filemenu.add_command(label='Hilfe', command=self.MENUHelp)
+        filemenu.add_command(label='Help', command=self.MENUHelp)
         
     def MENUSaveParams(self):
         '''
-        Sichern der Parameter als npz-Datei. Für die Datei kann dann ein geeigneter Speicherplatz ausgewählt werden.
-        Die Datei kann dann in beliebigen anderen Python-Skripts eingeladen und verwendet werden.
+        save the calculated parameters in a npz-file
+        reusable in an other python script
         '''
-        # Nur verfügbar, wenn die Kalibrierung erfolgreich abgeschlossen ist.
+        # check if calibration is completed
         if self.CalibrationCompleted == True:
-            # Verzeichnis abfragen, wo das Dokument gespeichert werden soll.
             ftypes = [('All files', '*'), ('Numpy Array Datei (.npz)', '.npz')]
-            file = tkinter.filedialog.asksaveasfilename(initialfile='Kalibrierungsparameter.npz', filetypes=ftypes, defaultextension='.npz')
+            file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateParameters.npz', filetypes=ftypes, defaultextension='.npz')
             if file == '':
                 return
             
-            # Speichern der Single-Kamera Parameter
+            # save single camera parameters
             if self.Art == 'Single':
                 d = self.CameraParams
                 np.savez(file, **d)
@@ -200,7 +191,7 @@ class App():
                 npz['Imgpoints'] = np.resize(npz.pop('Imgpoints'), size)
                 np.savez(file, **npz)
                 
-            # Speichern der Stereo-Kamera Parameter
+            # save stereo camera parameters
             elif self.Art == 'Stereo':
                 d = self.StereoParams
                 np.savez(file, **d)
@@ -211,20 +202,15 @@ class App():
                 np.savez(file, **npz)
                 
             self.Insert('\n--------------------------------------------------------------------\n')
-            self.Insert('Die Parameter wurden gesichert unter:\n{}'.format(file))
+            self.Insert('Parameters saved under:\n{}'.format(file))
             self.Insert('\n--------------------------------------------------------------------\n')
         else:
-            self.Insert('[ERROR] Keine Parameter vorhanden. Erst Kalibrierung durchführen!')
+            self.Insert('[ERROR] No Parameters. Calibrate first!')
         
     def MENUSaveConsole(self):
-        '''
-        Sichern des Inhaltes der Konsole als txt-Datei.
-        '''
-        # Verzeichnis abfragen, wo das Dokument gespeichert werden soll.
+        ''' save the console content as a txt file '''
         ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
-        file = tkinter.filedialog.asksaveasfilename(initialfile='Kalibrierungsprotokoll.txt', filetypes=ftypes, defaultextension='.txt')
-        
-        # Wenn Verzeichnis ausgewählt, wird der gesamte Inhalt des Ausgabefensters abgespeichert.
+        file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
         txt = self.scrollarea.get('1.0', tkinter.END)
         if file=='':
             return
@@ -233,22 +219,17 @@ class App():
         f.close()
         
         self.Insert('\n--------------------------------------------------------------------\n')
-        self.Insert('Das Protokoll wurde gesichert unter:\n{}'.format(file))
+        self.Insert('Log saved under:\n{}'.format(file))
         self.Insert('\n--------------------------------------------------------------------\n')
         
     def MENUNewCalibration(self):
-        '''
-        Zurücksetzung aller Einstellungen. (quasi wie ein erneutes Öffnen der Anwendung)
-        Eine erneute Kalibrierung ist möglich.
-        '''
-        # App zurücksetzen
+        ''' reset for a new calibration '''
         self.StatusLabelText.set(' ')
         self.SwitchButtonState('NORMAL')
         self.entry.set(30.0)
         self.formframe.update()
         self.ClearConsole()
         
-        # Variablen neu definieren
         self.LeftPath = ''
         self.RightPath = ''
         self.Art = ''
@@ -257,74 +238,40 @@ class App():
         self.timestopper = 0
         
     def MENUAbout(self):
-        '''
-        Öffnet ein Popup Fenster, in welchem ein kurzer About Text steht.
-        Infos zum Erstelldatum, Version der Anwendung und Copyright text.
-        '''
-        c = 2020  # Copyright Year
-        txt = 'Camera Calibrator App\nCreated by Daniel Weber. Copyright {}\nTechnische Hochschule Mittelhessen\nVersion {}'.format(c,self.VERSIONINDEX)
+        ''' popup window with about text '''
+        COPYRIGHT = 2022  # copyright year
+        txt = 'Camera Calibrator App\nCreated by Daniel Weber. Copyright {}\nVersion {}'.format(COPYRIGHT,self.VERSIONINDEX)
         tkinter.messagebox.showinfo('Camera Calibrator App - About',txt)
         
     def MENUHelp(self):
-        '''
-        Hilfetext zur Bedienung des Programms. 
-        '''
-        txt = 'HILFE:\n\n'
-        
-        txt += 'Benutzen der Kalibrierung:\n'
-        txt += 'Die Stereokamera-Kalibrierung benötigt drei Eingabewerte. Für die linke und rechte '
-        txt += 'Kamera muss je ein Ordner mit den Kalibrierbildern eines Schachbrettmusters, sowie '
-        txt += 'die Seitenlänge der Quadrate auf dem Schachbrett angegeben sein. Mit dem Startbutton beginnt die '
-        txt += 'Kalibrierung. Bei der Angabe eines einzelnen Ordners beginnt automatisch die '
-        txt += 'Kalibrierung der einzelnen Kamera. Bei zwei die der Stereokamera.'
-        
-        txt += '\n\nAnforderungen an die Kalibrierbilder:\n'
-        txt += 'Das Kalibrierobjekt sollte von beiden Kameras gut zu sehen sein. Bei jedem Bild '
-        txt += 'sollte das Objekt leicht gedreht werden, um mehrere Blickwinkel zu erhalten. '
-        txt += 'Die besten Ergebnisse werden erziehlt, wenn 10-20 Bilder (oder noch mehr) '
-        txt += 'aufgenommen werden. Die Bilder sollten als jpg, png oder tiff Datei vorliegen. '
-        txt += 'Das Kalibrierobjekt selbst muss ein assymetrisches Schachbrettmuster sein.'
-        
-        txt += '\n\nSpeichern der Parameter:\n'
-        txt += 'Unter dem Menüpunkt Options -> Save Parameters können die berechneten Kameraparameter '
-        txt += 'an einem beliebigen Ort auf Ihrem Computer abgespeichert werden. Standardmäßig liegen '
-        txt += 'die Dateien als npz-Datei vor. Dieses Dateiformat ermöglicht es Numpy Arrays '
-        txt += 'innerhalb von Python sehr einfach zu sichern. Für weitere Informationen wird hier ' 
-        txt += 'auf die numpy Online Dokumentation verwiesen. '
-        txt += 'Ein Speichern des Konsoleninhaltes als txt-Datei ist ebenfalls möglich.'
+        ''' help '''
+        txt = 'HELP:\n\n'
+        txt += 'for detailed help look at the README file.'
         
         self.Insert('--------------------------------------------------------------------\n')
         self.Insert(txt)
         self.Insert('\n--------------------------------------------------------------------\n')
-           
-#####################################################################################################################  
-# INPUT
 
     def InputLeft(self):
-        '''
-        Regelt den Input des Linken Ordners und speichert den Pfad ab.
-        '''
+        ''' input directory of the left camera '''
         self.LeftPath = tkinter.filedialog.askdirectory()
-        self.Insert('Pfad Linke Kamera:')
+        self.Insert('Path left camera:')
         self.Insert(self.LeftPath)
         self.Insert('')
         
     def InputRight(self):
-        '''
-        Regelt den Input des Rechten Ordners und speichert den Pfad ab.
-        '''
+        ''' input directory of the right camera '''
         self.RightPath = tkinter.filedialog.askdirectory()
-        self.Insert('Pfad Rechte Kamera:')
+        self.Insert('Path right camera:')
         self.Insert(self.RightPath)
         self.Insert('')
         
     def CheckInput(self):
-        '''
-        Überprüfung der Eingabewerte.
-        '''
+        ''' check the inputs (directories, square size) '''
         
         # SQUARE SIZE --------------------------------------------------------
-        # Muss eine Zahl sein. Dezimal-Trennzeichen ein Punkt.
+        # has to be a number
+        # dot as decimal seperator
         
         try:
             self.SquareSize = self.entry.get()
@@ -332,42 +279,28 @@ class App():
             self.Insert('[ERROR] Fehlerhafte Angabe der Square Size.')
             return False
         
-        
-        # ORDNER -------------------------------------------------------------
-        # 1. Ordner müssen angegeben sein.
-        #    Entscheidung Single oder Stereo - Kalibration
-        # 2. linker und rechter Ordner dürfen nicht gleich sein.
-        # 3. Der Ordner darf nicht leer sein.
-        #    Im Ordner dürfen sich nur Bilder vom selben Typ befinden.
-        #    Dateityp muss bmp, jpeg, jpg, png, tiff oder tif sein.
-        # 4. Es müssen pro Kamera gleich viele Bilder existieren.
+        # DIRECTORIES --------------------------------------------------------
         
         left = str(self.LeftPath); right = str(self.RightPath)
         
-        # 1. -----------------------------------------------------------------
+        # at least one directory has to be specified
+        # decision if single or stereo camera
         
         if left == '' and right == '':
             self.Insert('[ERROR] Keine Ordner angegeben.')
-            return False
-        
-        elif left == '' or right == '':
-            self.Art = 'Single'
-            if left == '':
-                self.Seite = 'R'; self.SinglePath = right
-            else:
-                self.Seite = 'L'; self.SinglePath = left
-                
+            return False                
         else:
-            self.Art = 'Stereo'
-            self.Seite = ''; self.SinglePath = ''
+            self.SingleOrStereo(left, right)
             
-        # 2. -----------------------------------------------------------------
+        # left and right directory cannot be the same
         
         if left == right:
             self.Insert('[ERROR] Linker und Rechter Ordner sind identisch')
             return False
         
-        # 3. -----------------------------------------------------------------
+        # directories cannot be empty
+        # images have to be the same datatype
+        # possible types: bmp, jpeg, jpg, png, tiff, tif
         
         types = ['bmp', 'jpeg', 'jpg', 'png', 'tiff', 'tif']
         
@@ -409,50 +342,58 @@ class App():
                 self.Insert('[ERROR] Ungültiger Dateityp: {}'.format(endsR[0].lower()))
                 return False
             
-        # 4. -----------------------------------------------------------------
+        # same number of images for both cameras for stereo calibration
         
         if self.Art == 'Stereo':
             if len(l) != len(r):
                 self.Insert('[ERROR] Pro Kamera müssen gleich viele Bilder existieren.')
                 return False
         
-        # Wenn alle Eingaben korrekt, wird True zurückgegeben und die 
-        # Kalibrierung kann starten.
         return True
-
-#####################################################################################################################
-# START
-
+    
+    def SingleOrStereo(self, left, right):
+        ''' decide if calibrating a single or a stereo camera '''
+        if left == '' or right == '':
+            self.Art = 'Single'
+            if left == '':
+                self.Seite = 'R'; self.SinglePath = right
+            else:
+                self.Seite = 'L'; self.SinglePath = left
+        else:
+            self.Art = 'Stereo'
+            self.Seite = ''
+            self.SinglePath = ''
+    
     def StartButton(self):
         if self.CheckInput():
             
             self.ClearConsole()
             self.CalBegonnen = True
-            self.StatusLabelText.set('Kalibrierung läuft. Bitte warten...')
+            self.StatusLabelText.set('Calibrating. Please wait ...')
             self.SwitchButtonState('DISABLED')
             
             if self.Art == 'Stereo':
                 
                 self.StartTime = time.perf_counter(); self.timestopper = 0
                 self.Insert('--------------------------------------------------------------------\n')
-                self.Insert('EINGABE PARAMETER:\n')
-                self.Insert('Pfad Linke Kamera:')
+                self.Insert('INPUT PARAMETERS:\n')
+                self.Insert('Path left camera:')
                 self.Insert(self.LeftPath); self.Insert('')
-                self.Insert('Pfad Rechte Kamera:')
+                self.Insert('Path right camera:')
                 self.Insert(self.RightPath); self.Insert('')
-                self.Insert('Square Size des Schachbrettmusters: {} mm\n'.format(self.SquareSize))
+                self.Insert('Square Size: {} mm\n'.format(self.SquareSize))
                 self.Insert('--------------------------------------------------------------------\n')
                 self.Insert('STEREO CAMERA CALIBRATION\n')
                 self.Insert('--------------------------------------------------------------------\n')
                 self.StereoParams = StereoCamera(self.LeftPath, self.RightPath, self.SquareSize)
                 
                 if not self.StereoParams == None:
-                    self.StatusLabelText.set('Kalibrierung beendet.')
+                    self.StatusLabelText.set('Calibration done.')
                     self.CalibrationCompleted = True
                     
                 if self.CalibrationCompleted:
                     end = time.perf_counter() - self.StartTime - self.timestopper * self.timepause
-                    self.Insert('benötigte Zeit für Kalibrierung: {:.4f} Sekunden\n'.format(end))
+                    self.Insert('time for calibration: {:.4f} seconds\n'.format(end))
                     self.Insert('--------------------------------------------------------------------\n')
                     self.Insert('CALIBRATION COMPLETED\n')
                     self.Insert('--------------------------------------------------------------------\n')
@@ -461,28 +402,28 @@ class App():
                 
                 self.StartTime = time.perf_counter(); self.timestopper = 0
                 self.Insert('--------------------------------------------------------------------\n')
-                self.Insert('EINGABE PARAMETER:\n')
-                self.Insert('Pfad der Kamera:')
+                self.Insert('INPUT PARAMETERS:\n')
+                self.Insert('Path camera:')
                 self.Insert(self.SinglePath); self.Insert('')
-                self.Insert('Square Size des Schachbrettmusters: {} mm\n'.format(self.SquareSize))
+                self.Insert('Square Size: {} mm\n'.format(self.SquareSize))
                 self.Insert('--------------------------------------------------------------------\n')
                 self.Insert('SINGLE CAMERA CALIBRATION\n')
                 self.Insert('--------------------------------------------------------------------\n')
                 self.CameraParams = SingleCamera(self.SinglePath, self.SquareSize)
                 
                 if not self.CameraParams == None:
-                    self.StatusLabelText.set('Kalibrierung beendet.')
+                    self.StatusLabelText.set('Calibration done.')
                     self.CalibrationCompleted = True
                     
                 if self.CalibrationCompleted:
                     end = time.perf_counter() - self.StartTime - self.timestopper * self.timepause
-                    self.Insert('benötigte Zeit für Kalibrierung: {:.4f} Sekunden\n'.format(end))
+                    self.Insert('time for calibration: {:.4f} seconds\n'.format(end))
                     self.Insert('--------------------------------------------------------------------\n',)
                     self.Insert('CALIBRATION COMPLETED\n')
                     self.Insert('--------------------------------------------------------------------\n')
                     
             if self.CalibrationCompleted == False:
-                self.StatusLabelText.set('Fehler bei der Kalibrierung.')
+                self.StatusLabelText.set('Error while calibrating.')
                 
             self.InfoAfterCalibration()
             self.SwitchButtonState('NORMAL')
@@ -502,22 +443,23 @@ class App():
         if not self.CalibrationCompleted:
             return
         
-        self.Insert('INFORMATIONEN:\n')
-        self.Insert('- Vor dem Schliessen des Fensters bitte die Parameter exportieren!',1)
+        self.Insert('INFORMATION:\n')
+        self.Insert('- export parameters before closing the window!',1)
         self.Insert('  Menu -> Options -> Save Parameters\n',1)
-        self.Insert('- Die hier dargestellten Ergebnisse sind gerundet.',1)
-        self.Insert('  Gespeichert werden alle verfügbaren Nachkommastellen.',1)
+        self.Insert('- displayed values are rounded.',1)
+        self.Insert('  saved with all decimal places.',1)
         
         self.Insert('\n--------------------------------------------------------------------\n',1)
 
-# %% ################################################################################################################
-# Klasse Images:
-# Diese Klasse dient zum Beschreiben der Kalibrierungsbilder.
-# Hier werden die Bilder analysiert und die Punkte detektiert.
-# Als Input Parameter dient der Pfad des Kamera-Ordners und die SquareSize des Schachbrettmusters.
+#####################################################################################################################
+# Class Images:
+# in this class we discribe the calibration images
+# analyze the pictures and detect the points
 #####################################################################################################################
 
 class Images():
+    ''' load and analyze the images '''
+    
     def __init__(self, path, SquareSize):
         self.ImageData = {}
         self.Check = True
@@ -529,20 +471,20 @@ class Images():
         
     def SortImageNames(self):
         '''
-        Diese Funktion analysiert den gegebenen Kamerapfad zum entsprechenden Ordner.
-        Die Dateien werden betrachtet und dann geordnet in eine Liste geschrieben.
+        read all the files in the directory
+        sort by name
         '''
-        # Extrahieren aller Dateinamen aus dem gegebenen Verzeichnis.
+        # extract all files
         imagelist = os.listdir(self.ImageData['OrdnerPfad'])
         imagelist = sorted(imagelist)
         
-        # Welche längen haben die gegebenen Strings? Speichern in Liste
+        # length of filenames
         lengths = []
         for name in imagelist:
             lengths.append(len(name))
         lengths = sorted(list(set(lengths)))
         
-        # sortieren der Namen.
+        # sort by name
         ImageNames = []
         ImageNamesRaw = []
         for l in lengths:
@@ -551,26 +493,24 @@ class Images():
                     ImageNames.append(os.path.join(self.ImageData['OrdnerPfad'],name))
                     ImageNamesRaw.append(name)
         
-        # Ergebnisse speichern
         self.ImageData['ImagePfade'] = ImageNames
         self.ImageData['ImageNamesRaw'] = ImageNamesRaw
         
     def GetBoardSize(self):
         '''
-        Diese Funktion berechnet sich die Größe des Schachbrettmusters. Dabei muss auf dem Schachbrett eine
-        minimale Größe von (3,4) bis maximal (13,14) vorliegen.
-        Quadratische Muster sind nicht erlaubt.
+        analyze one image to detect the checkerboard size
+        possible from min. (3,4) to max. (13,14)
+        quadratic is not possible
         '''
         self.BoardSizeFehler = False
         imagepath = self.ImageData['ImagePfade'][0]
         img = cv2.imread(imagepath)
         
-        # Bild auf 20% der Originalgröße reduzieren, um Rechenzeit einzusparen.
+        # convert the image to 20% of original size to save time
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.resize(gray,(0,0),fx=0.2,fy=0.2) # 20%
         
-        # Mögliche Board Sizes.
-        # HINT: Wenn nötig kann eine fehlende Board Size hier noch nachträglich definiert werden.
+        # possible board sizes
         sizes = np.array([[7,11],[6,9],[5,7],
                           [3,4],[3,5],[3,6],[3,7],[3,8],[4,5],[4,6],[4,7],[4,8],[4,9],
                           [5,6],[5,8],[5,9],[5,10],[6,7],[6,8],[6,10],[6,11],
@@ -578,15 +518,14 @@ class Images():
                           [9,10],[9,11],[9,12],[9,13],[9,14],[10,11],[10,12],[10,13],[10,14],
                           [11,12],[11,13],[11,14],[12,13],[12,14],[13,14]])
         
-        # Durchgehen aller BoardSizes, und Überprüfung ob die richtige vorliegt.
+        # check all sizes in the array above
         for k in range(sizes.shape[0]):
             size = tuple(sizes[k,:])
             ret, _ = cv2.findChessboardCorners(gray, size)
             if ret:
                 break
             
-        # Falls nicht gefunden, werden die Sizes nochmals durchgegangen.
-        # Diesmal wird das Bild aber nur auf die Hälfte verkleinert.
+        # if not found we try the same with 50% of original size
         if ret == False:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             gray = cv2.resize(gray,(0,0),fx=0.5,fy=0.5) # 50%
@@ -598,28 +537,26 @@ class Images():
                 if k == (sizes.shape[0]-1):
                     self.BoardSizeFehler = True
                    
-        # Größerer Wert zuerst darstellen.
         size = np.array(size)
         BoardSize = (size.max(), size.min())
-        
-        # Ergebnisse speichern
         self.ImageData['BoardSize'] = BoardSize
         self.ImageData['ImageSize'] = tuple(img.shape[:2])
         
     def GetChessboard(self):
+        ''' search for checkerboard and save points '''
         paths = self.ImageData['ImagePfade']
         boardSize = self.ImageData['BoardSize']
         
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         
-        # Erstellung der Objectpoints. Verrechnug mit der SquareSize.
+        # Objectpoints 
         objp = np.zeros((boardSize[0]*boardSize[1],3), np.float32)
         objp[:,:2] = np.mgrid[0:boardSize[0],0:boardSize[1]].T.reshape(-1,2)
         objp *= self.ImageData['SquareSize']
         
         objpoints = []; imgpoints = []
         
-        # Detektieren der Imagepoints
+        # Imagepoints
         for name in paths:
             img = cv2.imread(name)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -631,17 +568,17 @@ class Images():
             else:
                 return None
             
-        # Ergebnisse speichern
         self.ImageData['Objpoints'] = objpoints
         self.ImageData['Imgpoints'] = imgpoints
 
-# %% ################################################################################################################
-# Klasse Kamera:
-# Diese Klasse dient der Kalibrierung einer Kamera.
-# Benötigt wird eine vorherige Anwendung der Image-Klasse.
+#####################################################################################################################
+# Class Camera:
+# calibrating the camera
+# need a application of Images first
 #####################################################################################################################
 
 class Camera():
+    
     def __init__(self, ImageData):
         self.CameraParams = {}
         self.CameraParams['Objpoints'] = ImageData['Objpoints']
@@ -658,26 +595,27 @@ class Camera():
         
     def Calibration(self):
         '''
-        Kalibrierung der Kamera. Berechnung der Matrizen und Speichern in CameraParams.
+        calibration of the camera
+        save all values in CameraParams
         '''
         gray = cv2.cvtColor(cv2.imread(self.CameraParams['ImagePfade'][0]), cv2.COLOR_BGR2GRAY)
         g = gray.shape[::-1]
         
-        # HINT: Hier sind zusätzliche Einstellungen zu calibrateCamera möglich.
+        # HINT: additional settings can be set here
         flags = 0
-        # flags |= cv2.CALIB_RATIONAL_MODEL # Erstellt statt 3 radiale Verzeichnungsparameter 6.
+        # flags |= cv2.CALIB_RATIONAL_MODEL # 6 instead of 3 radial parameters
         
-        # Kamera Kalibrierung
+        # calibration
         (ret, mtx, dist, rvecs, tvecs) = cv2.calibrateCamera(self.CameraParams['Objpoints'], self.CameraParams['Imgpoints'], g, None, None, flags=flags)
         
-        # Umrechnung der Rotationsvektoren in Rotationsmatrizen und bilden der Transformationsmatrix
+        # calculation of the rotationmatrix and transformmatrix
         Rmtx = []; Tmtx = []; k = 0
         for r in rvecs: 
             Rmtx.append(cv2.Rodrigues(r)[0])
             Tmtx.append(np.vstack((np.hstack((Rmtx[k],tvecs[k])),np.array([0,0,0,1]))))
             k += 1
         
-        # Zusätzliche Berechnung der Intrinsischen Matrix unter Berücksichtigung der Distortion.
+        # additional intrinsic matrix with distortion
         img = cv2.imread(self.CameraParams['ImagePfade'][0],0)
         h,w = img.shape[:2]
         newmtx, roi = cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
@@ -685,7 +623,6 @@ class Camera():
         if np.sum(roi) == 0:
             roi = (0,0,w-1,h-1)
         
-        # Ergebnisse speichern
         self.CameraParams['Intrinsic'] = mtx
         self.CameraParams['Distortion'] = dist
         self.CameraParams['DistortionROI'] = roi
@@ -696,9 +633,7 @@ class Camera():
         self.CameraParams['TransVektor'] = tvecs
     
     def Errors(self):
-        '''
-        Berechnung der Reprojection Errors.
-        '''
+        ''' Reprojection Errors '''
         objp = np.array(self.CameraParams['Objpoints'][0])
         imgp = np.array(self.CameraParams['Imgpoints'])
         imgp = imgp.reshape((imgp.shape[0], imgp.shape[1], imgp.shape[3]))
@@ -706,7 +641,7 @@ class Camera():
         D = np.array(self.CameraParams['Distortion'])
         R = np.array(self.CameraParams['RotVektor'])
         T = np.array(self.CameraParams['TransVektor'])
-        N = imgp.shape[0] # Anzahl Views
+        N = imgp.shape[0] # Views
         
         # Neue imgp berechnen
         imgpNew = []
@@ -715,13 +650,13 @@ class Camera():
             imgpNew.append(temp.reshape((temp.shape[0], temp.shape[2])))
         imgpNew = np.array(imgpNew)
         
-        # Error per Point berechnen (in x und y)
+        # calculate error of every point (x and y)
         err = []
         for i in range(N):
             err.append(imgp[i] - imgpNew[i])
         err = np.array(err)
         
-        # Mean Errors berechnen
+        # mean Errors
         def RMSE(err):
             return np.sqrt(np.mean(np.sum(err**2, axis=1)))
         
@@ -734,37 +669,34 @@ class Camera():
             
         rmseAll = RMSE(errall)
         
-        # Ergebnisse speichern
         self.CameraParams['Errors'] = rmsePerView
         self.CameraParams['MeanError'] = rmseAll
         self.CameraParams['Reprojectedpoints'] = imgpNew
     
     def PrintResults(self):
-        '''
-        Schreiben der Resultate in das Ausgabefenster.
-        '''
-        app.Insert('Allgemeine Daten:\n' +
-                   '  Bild Size:       {} x {}\n'.format(self.CameraParams['ImageSize'][0], self.CameraParams['ImageSize'][1]) +
-                   '  Board Size:      {} x {}\n'.format(self.CameraParams['BoardSize'][0], self.CameraParams['BoardSize'][1]) +
-                   '  Anzahl Bilder:   {}\n'.format(len(self.CameraParams['Objpoints'])) + 
-                   '  Punkte pro Bild: {}\n'.format(self.CameraParams['Objpoints'][0].shape[0]))
+        ''' write the results in the window '''
+        app.Insert('general data:\n' +
+                   '  Image Size:       {} x {}\n'.format(self.CameraParams['ImageSize'][0], self.CameraParams['ImageSize'][1]) +
+                   '  Board Size:       {} x {}\n'.format(self.CameraParams['BoardSize'][0], self.CameraParams['BoardSize'][1]) +
+                   '  Image Quantaty:   {}\n'.format(len(self.CameraParams['Objpoints'])) + 
+                   '  Points per Image: {}\n'.format(self.CameraParams['Objpoints'][0].shape[0]))
         
-        app.Insert('Intrinsische Matrix:\n'+str(self.CameraParams['Intrinsic'])+'\n')
+        app.Insert('Intrinsic Matrix:\n'+str(self.CameraParams['Intrinsic'])+'\n')
         
         D = np.round(self.CameraParams['Distortion'],5)[0]
         if D.shape[0] > 5:
-            app.Insert('Verzeichnung:\n'+
+            app.Insert('Distortion:\n'+
                        '  radial:     '+str(D[0])+' '+str(D[1])+' '+str(D[4])+' '+str(D[5])+' '+str(D[6])+' '+str(D[7])+'\n'
                        '  tangential: '+str(D[2])+' '+str(D[3])+'\n')
         else:
-            app.Insert('Verzeichnung:\n'+
+            app.Insert('Distortion:\n'+
                        '  radial:     '+str(D[0])+'  '+str(D[1])+'  '+str(D[4])+'\n'
                        '  tangential: '+str(D[2])+'  '+str(D[3])+'\n')
 
-        app.Insert('Extrinsische Matrizen:')
+        app.Insert('Extrinsic Matrices:')
         for i in range(len(self.CameraParams['Extrinsics'])):
             t = self.CameraParams['Extrinsics'][i]
-            app.Insert('von Bild '+str(i+1)+': ({})\n'.format(self.ImageNamesRaw[i])+str(t)+'\n')
+            app.Insert('from Image '+str(i+1)+': ({})\n'.format(self.ImageNamesRaw[i])+str(t)+'\n')
             
         app.Insert('Mean Reprojection Error per Image [Pixel]:')
         k = 1
@@ -775,11 +707,11 @@ class Camera():
         app.Insert('Mean Reprojection Error [Pixel]: '+str(np.round(self.CameraParams['MeanError'],5))+'\n')
         
         if self.CameraParams['MeanError'] > 1:
-            app.Insert('Achtung, Reprojection Error über 1!\n', form='warn')
+            app.Insert('Attention, Reprojection Error over 1!\n', form='warn')
 
-# %% ################################################################################################################
-# Klasse Stereokamera:
-# Innerhalb dieser Klasse wird die Stereokamera kalibriert.
+#####################################################################################################################
+# Class Stereo:
+# calibrating a stereo camera set
 #####################################################################################################################
 
 class Stereo():
@@ -793,29 +725,24 @@ class Stereo():
         self.PrintResults()
 
     def ExtractCameraParams(self):
-        '''
-        Parameter der linken und rechten Kamera extrtahieren und in das
-        StereoParams Dictionary schreiben.
-        '''
-        # Allgemeine Daten werden ohne Präfix eingespeichert.
+        ''' extract the parameters of the left and right camera '''
+        # general data without präfix
         self.StereoParams['BoardSize'] = self.Left.pop('BoardSize'); self.Right.pop('BoardSize')
         self.StereoParams['SquareSize'] = self.Left.pop('SquareSize'); self.Right.pop('SquareSize')
         self.StereoParams['ImageSize'] = self.Left.pop('ImageSize'); self.Right.pop('ImageSize')
         
-        # Vor alle spezifischen Parameter der linken Kamera wird 'L_' gesetzt.
+        # specific parameters of left camera with 'L_'
         for Lkey in self.Left.keys():
             name = 'L_'+str(Lkey)
             self.StereoParams[name] = self.Left[Lkey]
             
-        # Vor alle spezifischen Parameter der rechten Kamera wird 'R_' gesetzt.
+        # specific parameters of right camera with 'R_'
         for Rkey in self.Right.keys():
             name = 'R_'+str(Rkey)
             self.StereoParams[name] = self.Right[Rkey]
     
     def Calibration(self):
-        '''
-        Berechnung der Stereokamera Parameter.
-        '''
+        ''' Calculating the stereo camera parameters '''
         obj = self.StereoParams['L_Objpoints']
         img1 = self.StereoParams['L_Imgpoints']
         k1 = self.StereoParams['L_Intrinsic']
@@ -824,11 +751,10 @@ class Stereo():
         k2 = self.StereoParams['R_Intrinsic']
         d2 = self.StereoParams['R_Distortion']
         
-        # Auslesen der Bildgröße und spiegelverkehrte Speicherung
         grayL1 = cv2.imread(self.StereoParams['L_ImagePfade'][0], 0)
         g = grayL1.shape[::-1]
         
-        # HINT: Hier sind zusätzliche Einstellungen der stereoCalibrate Funktion möglich.
+        # HINT: additional settings for stereoCalibrate function
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 1e-5)
         flags = 0
         flags |= cv2.CALIB_FIX_INTRINSIC
@@ -836,29 +762,26 @@ class Stereo():
         # flags |= cv2.CALIB_FIX_FOCAL_LENGTH
         # flags |= cv2.CALIB_ZERO_TANGENT_DIST
         
-        # Stereo Kamera Kalibrierung
+        # stereo camera calibration
         (ret, K1, D1, K2, D2, R, t, E, F) = cv2.stereoCalibrate(obj, img1, img2, k1, d1, k2, d2, g, criteria=criteria, flags=flags)
         
-        # Transformationsmatrix zusammensetzen
+        # transformation matrix
         T = np.vstack((np.hstack((R,t)),np.array([0,0,0,1])))
         
-        # Ergebnisse speichern
         self.StereoParams['Transformation'] = T
         self.StereoParams['Essential'] = E
         self.StereoParams['Fundamental'] = F
         self.StereoParams['MeanError'] = ret
         
-        # HINT: Falls eine Neuberechnung der Intrinsik erwünscht ist die folgenden Zeilen auskommentieren.
+        # HINT: uncomment follwing rows if you wish a new calculation of the specific intrinsics
         # self.StereoParams['L_Intrinsic'] = K1
         # self.StereoParams['L_Distortion'] = D1
         # self.StereoParams['R_Intrinsic'] = K2
         # self.StereoParams['R_Distortion'] = D2
     
     def PrintResults(self):
-        '''
-        Schreiben der Resultate in das Ausgabefenster.
-        '''
-        app.Insert('Transformationsmatrix:\n'+str(self.StereoParams['Transformation'])+'\n')
+        ''' plot the results '''
+        app.Insert('Transformationmatrix:\n'+str(self.StereoParams['Transformation'])+'\n')
         
         app.Insert('Essentialmatrix:\n'+str(self.StereoParams['Essential'])+'\n')
         
@@ -869,58 +792,46 @@ class Stereo():
         app.Insert('Overall Mean Reprojection Error: '+str(np.round(self.StereoParams['MeanError'],5))+'\n')
         
         if self.StereoParams['MeanError'] > 1:
-            app.Insert('Achtung, Reprojection Error über 1!\n', form='warn')
+            app.Insert('Attention, Reprojection Error over 1!\n', form='warn')
     
-# %% ################################################################################################################
-# Durchführung der Kalibrierung
-# Funktion für Single und Stereokamera.
+#####################################################################################################################
+# Calibration
 #####################################################################################################################
 
 def SingleCamera(path, SquareSize):
-    '''
-    Kalibrierungsfunktion einer Kamera. Bilder werden analysiert und die Kamera kalibriert.
-    '''
     try:
         Image = Images(path, SquareSize)
         ImageData = Image.ImageData
-        
     except:
-        app.Insert('[ERROR] Fehler bei der Analyse der Kalibrierungsbilder.')
+        app.Insert('[ERROR] Error while analyzing the images.')
         return None
-    
     if Image.BoardSizeFehler == True:
-        app.Insert('[ERROR] Fehler bei Detektion der Board Size.')
+        app.Insert('[ERROR] Error while detecting the Board Size.')
         return None
-    
     try:
         Cam = Camera(ImageData)
         CameraData = Cam.CameraParams
         return CameraData
-    
     except:
-        app.Insert('[ERROR] Fehler bei der Kamerakalibrierung.')
+        app.Insert('[ERROR] Error while Calibration.')
         return None
     
 def StereoCamera(pathL, pathR, SquareSize):
-    '''
-    Kalibrierungsfunktion der Stereokamera. Einzelne Kameras werden kalibriert und danach
-    die Parameter der Sterokamera berechnet.
-    '''
-    app.Insert('KALIBRIERUNG LINKE KAMERA\n')
+    app.Insert('CALIBRATION LEFT CAMERAA\n')
     
     LeftData = SingleCamera(pathL, SquareSize)
     if LeftData == None:
         return None
     
     app.Insert('--------------------------------------------------------------------\n')
-    app.Insert('KALIBRIERUNG RECHTE KAMERA\n')
+    app.Insert('CALIBRATION RIGHT CAMERA\n')
     
     RightData = SingleCamera(pathR, SquareSize)
     if RightData == None:
         return None
     
     app.Insert('--------------------------------------------------------------------\n')
-    app.Insert('KALIBRIERUNG DER STEREOKAMERA\n')
+    app.Insert('CALIBRATING THE STEREO CAMERA\n')
 
     try:
         St = Stereo(LeftData, RightData)
@@ -928,18 +839,14 @@ def StereoCamera(pathL, pathR, SquareSize):
         return StereoData
     
     except:
-        app.Insert('[ERROR] Fehler bei der Stereokamera Kalibrierung.')
+        app.Insert('[ERROR] Error while calibrating the stereo camera.')
         return None
     
-# %% ################################################################################################################
+#####################################################################################################################
 # Main Loop
 #####################################################################################################################
 
 if __name__ == '__main__':
-    '''
-    Hierrin wird das Hauptprogramm aufgerufen. Wird nur ausgeführt, wenn das
-    Programm direkt in dieser Datei abgespielt wird.
-    '''
     print('\nCamera Calibrator App\nStart: {}'.format(time.strftime('%H:%M:%S Uhr')))
     root = tkinter.Tk()
     app = App(root)
@@ -948,4 +855,4 @@ if __name__ == '__main__':
         Params = app.CameraParams
     elif app.Art == 'Stereo' and app.CalibrationCompleted == True:
         Params = app.StereoParams
-    print('Ende:  {}'.format(time.strftime('%H:%M:%S Uhr')))
+    print('End:  {}'.format(time.strftime('%H:%M:%S Uhr')))
