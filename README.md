@@ -12,4 +12,4 @@ The parametes will be saved in a npz file. To use the stored data you have to ru
 ```
 import numpy as np
 params = dict(np.load('filename.npz'))
-'''
+```
