@@ -2,6 +2,30 @@
 
 An app for calibration of a camera or stereo-camera with OpenCV.
 
+## Setup
+
+Install the Python dependencies and (optionally) system GUI packages.
+
+Run via pip:
+
+```bash
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+```
+
+Or run the bundled installer script (make it executable first if needed):
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+If the GUI fails to start because of missing tkinter on Debian/Ubuntu, run:
+
+```bash
+sudo apt update && sudo apt install python3-tk
+```
+
 ## Reusing the saved Parameters
 
 After a successful calibration you can save the calculated parameters with a command in the menu.
