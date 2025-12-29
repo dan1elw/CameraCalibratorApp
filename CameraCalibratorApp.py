@@ -38,6 +38,10 @@ np.set_printoptions(suppress=True, precision=5)
 # plot the results live
 #####################################################################################################################
 
+LEFT_PATH = './example/example_left_30mm/'
+RIGHT_PATH = './example/example_right_30mm/'
+SQUARE_SIZE = 30.0  # in mm
+
 class App():
     ''' Main Application '''
     
@@ -83,7 +87,7 @@ class App():
         ttk.Label(self.formframe, text='Checkerboard:', font='TkDefaultFont 12 bold').grid(row=21, column=0, columnspan=3, sticky='nw')
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=22, column=0, sticky='nw')
         ttk.Label(self.formframe, text='Square Size [mm]:').grid(row=25, column=0 ,sticky='nw')
-        self.entry = tkinter.DoubleVar(); self.entry.set(30.0)
+        self.entry = tkinter.DoubleVar(); self.entry.set(SQUARE_SIZE)
         tkinter.Entry(self.formframe, textvariable=self.entry, justify='right', width=12).grid(row=25,column=1,sticky='nw',columnspan=8)
         
         ttk.Label(self.formframe, text=' ').grid(row=30, column=0 ,sticky='nw')
@@ -108,8 +112,8 @@ class App():
         self.ClearConsole()
         
         # VARIABLES
-        self.LeftPath=''
-        self.RightPath=''
+        self.LeftPath = LEFT_PATH
+        self.RightPath = RIGHT_PATH
         self.Art = ''
         self.CalibrationCompleted = False
         self.CalBegonnen = False
