@@ -15,6 +15,7 @@ from .cal import SingleCamera, StereoCamera
 LEFT_PATH = './example/example_left_30mm/'
 RIGHT_PATH = './example/example_right_30mm/'
 SQUARE_SIZE = 30.0  # in mm
+VERSIONINDEX = '1.3.0'
 
 # SETTINGS
 np.set_printoptions(suppress=True, precision=5)
@@ -22,21 +23,27 @@ np.set_printoptions(suppress=True, precision=5)
 ########################################################
 # Class App:
 # in this class we create the graphical user interface
-# handle the data input for the calibration
-# plot the results live
+# handle the data input for the calibration and plot 
+# the results live
 ########################################################
 
 class App():
-    ''' Main Application '''
+    '''
+    Main Application Class for the Camera Calibrator App
+    creates the GUI and handles user inputs
+    '''
     
     def __init__(self, master):
-        ''' Initialising the GUI '''
+        '''
+        Initialising the GUI
+        '''
+
         self.master = master
         self.master.title('Camera Calibrator App')
         self.master.resizable(0,0)
         self.timestopper = 0
         self.timepause = 0.02
-        self.VERSIONINDEX = '1.1' # Version-Index
+        self.VERSIONINDEX = VERSIONINDEX
         
         # DEFINE AREA's
         self.console = ttk.Frame(master)
@@ -93,7 +100,7 @@ class App():
         self.scrollarea.timestopper = self.timestopper
         self.scrollarea.clear()
 
-        self.createMenu()
+        self._create_menu()
 
         # VARIABLES
         self.LeftPath = LEFT_PATH
@@ -102,35 +109,36 @@ class App():
         self.CalibrationCompleted = False
         self.CalBegonnen = False
 
-    def createMenu(self):
+    def _create_menu(self):
         '''
         create the menu of the application
         with options for saving, new calibration and exit
-        also a help and about function
         '''
+
         menu = tkinter.Menu(self.master, tearoff=False)
         self.master.config(menu=menu)
 
         # OPTIONS
         filemenu = tkinter.Menu(menu, tearoff=False)
         menu.add_cascade(label='Options', menu=filemenu)
-        filemenu.add_command(label='Save Parameters', command=self.MENUSaveParams)
-        filemenu.add_command(label='Save Log', command=self.MENUSaveConsole)
-        filemenu.add_command(label='New Calibration', command=self.MENUNewCalibration)
+        filemenu.add_command(label='Save Parameters', command=self._menu_save_parameters)
+        filemenu.add_command(label='Save Log', command=self._menu_save_log)
+        filemenu.add_command(label='New Calibration', command=self._menu_new_calibration)
         filemenu.add_separator()
         filemenu.add_command(label='Exit App', command=self.master.destroy)
         
         # HELP
         filemenu = tkinter.Menu(menu, tearoff=False)
         menu.add_cascade(label='Help', menu=filemenu)
-        filemenu.add_command(label='About', command=self.MENUAbout)
-        filemenu.add_command(label='Help', command=self.MENUHelp)
+        filemenu.add_command(label='About', command=self._menu_about)
+        filemenu.add_command(label='Help', command=self._menu_help)
         
-    def MENUSaveParams(self):
+    def _menu_save_parameters(self):
         '''
         save the calculated parameters in a npz-file
         reusable in an other python script
         '''
+
         # check if calibration is completed
         if self.CalibrationCompleted == True:
             ftypes = [('All files', '*'), ('Numpy Array Datei (.npz)', '.npz')]
@@ -163,8 +171,11 @@ class App():
         else:
             self.scrollarea.print('[ERROR] No Parameters. Calibrate first!')
         
-    def MENUSaveConsole(self):
-        ''' save the console content as a txt file '''
+    def _menu_save_log(self):
+        '''
+        save the console content as a txt file
+        '''
+
         ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
         file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
         txt = self.scrollarea.get('1.0', tkinter.END)
@@ -178,8 +189,11 @@ class App():
         self.scrollarea.print('Log saved under:\n{}'.format(file))
         self.scrollarea.print('\n--------------------------------------------------------------------\n')
         
-    def MENUNewCalibration(self):
-        ''' reset for a new calibration '''
+    def _menu_new_calibration(self):
+        '''
+        Reset the whole application in order to start a new calibration
+        '''
+
         self.StatusLabelText.set(' ')
         self.SwitchButtonState('NORMAL')
         self.entry.set(30.0)
@@ -193,14 +207,20 @@ class App():
         self.CalBegonnen = False
         self.timestopper = 0
         
-    def MENUAbout(self):
-        ''' popup window with about text '''
+    def _menu_about(self):
+        '''
+        popup window with about text
+        '''
+
         COPYRIGHT = 2022  # copyright year
         txt = 'Camera Calibrator App\nCreated by Daniel Weber. Copyright {}\nVersion {}'.format(COPYRIGHT,self.VERSIONINDEX)
         tkinter.messagebox.showinfo('Camera Calibrator App - About',txt)
         
-    def MENUHelp(self):
-        ''' help '''
+    def _menu_help(self):
+        '''
+        "I need help!"
+        '''
+
         txt = 'HELP:\n\n'
         txt += 'for detailed help look at the README file.'
         
@@ -209,21 +229,29 @@ class App():
         self.scrollarea.print('\n--------------------------------------------------------------------\n')
 
     def InputLeft(self):
-        ''' input directory of the left camera '''
+        '''
+        input directory of the left camera
+        '''
+
         self.LeftPath = tkinter.filedialog.askdirectory()
         self.scrollarea.print('Path left camera:')
         self.scrollarea.print(self.LeftPath)
         self.scrollarea.print('')
         
     def InputRight(self):
-        ''' input directory of the right camera '''
+        '''
+        input directory of the right camera
+        '''
+
         self.RightPath = tkinter.filedialog.askdirectory()
         self.scrollarea.print('Path right camera:')
         self.scrollarea.print(self.RightPath)
         self.scrollarea.print('')
         
     def CheckInput(self):
-        ''' check the inputs (directories, square size) '''
+        '''
+        check the inputs (directories, square size)
+        '''
         
         # SQUARE SIZE --------------------------------------------------------
         # has to be a number
@@ -308,7 +336,10 @@ class App():
         return True
     
     def SingleOrStereo(self, left, right):
-        ''' decide if calibrating a single or a stereo camera '''
+        '''
+        decide if calibrating a single or a stereo camera
+        '''
+
         if left == '' or right == '':
             self.Art = 'Single'
             if left == '':
@@ -321,6 +352,11 @@ class App():
             self.SinglePath = ''
     
     def StartButton(self):
+        '''
+        Start Button definition
+        starts the calibration process after checking the inputs
+        '''
+
         if self.CheckInput():
             
             self.scrollarea.clear()
@@ -385,6 +421,10 @@ class App():
             self.SwitchButtonState('NORMAL')
     
     def SwitchButtonState(self, state):
+        '''
+        Enable or disable input buttons. (gray out)
+        '''
+
         if state == 'DISABLED':
             self.InputButtonLeft['state'] = tkinter.DISABLED
             self.InputButtonRight['state'] = tkinter.DISABLED
@@ -396,6 +436,11 @@ class App():
             self.InputButtonStart['state'] = tkinter.NORMAL
     
     def InfoAfterCalibration(self):
+        '''
+        Will add some information after the calibration is completed.
+        Currently disabled.
+        '''
+
         if not self.CalibrationCompleted:
             return
         return
@@ -408,6 +453,10 @@ class App():
         self.scrollarea.print('\n--------------------------------------------------------------------\n',1)
 
 class Console(ScrolledText):
+    '''
+    Console class for the output window
+    '''
+
     def __init__(self, console, height=25, width=70):
         super().__init__(console, state='disabled', wrap=tkinter.WORD, height=height, width=width)
         #self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
@@ -421,6 +470,7 @@ class Console(ScrolledText):
         '''
         reset the console to default
         '''
+
         self.configure(state='normal')
         self.delete('1.0', tkinter.END)
         self.print("--------------------------------------------------------------------",1)
@@ -430,12 +480,11 @@ class Console(ScrolledText):
         self.configure(state='disabled')
         self.update()
 
-    def print(self, text, pause=0, format='normal'):
+    def print(self, text, pause=1, format='normal'):
         '''
-        function to plot some text into the console.
-        errors are red
-        writing in the window is disabled.
+        function to plot some formatted text into the console.
         '''
+
         self.configure(state='normal')
         if text[:7] == '[ERROR]':
             self.insert(tkinter.END, text, 'error')
@@ -447,6 +496,6 @@ class Console(ScrolledText):
         self.update()
         
         # waiting a little bit for smoother output
-        if pause == 0:
+        if pause == 1:
             self.timestopper += 1
             time.sleep(self.timepause)

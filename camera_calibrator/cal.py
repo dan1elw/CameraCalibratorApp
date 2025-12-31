@@ -2,9 +2,9 @@
 from .image import Images
 from .camera import Camera, Stereo
 
-#####################################################################################################################
+########################################################
 # Calibration
-#####################################################################################################################
+########################################################
 
 def SingleCamera(app, path, SquareSize):
     try:
@@ -23,9 +23,9 @@ def SingleCamera(app, path, SquareSize):
     except:
         app.scrollarea.print('[ERROR] Error while Calibration.')
         return None
-    
+
 def StereoCamera(app, pathL, pathR, SquareSize):
-    app.scrollarea.print('CALIBRATION LEFT CAMERAA\n')
+    app.scrollarea.print('CALIBRATION LEFT CAMERA\n')
     
     LeftData = SingleCamera(app, pathL, SquareSize)
     if LeftData == None:
@@ -39,7 +39,7 @@ def StereoCamera(app, pathL, pathR, SquareSize):
         return None
     
     app.scrollarea.print('--------------------------------------------------------------------\n')
-    app.scrollarea.print('CALIBRATING THE STEREO CAMERA\n')
+    app.scrollarea.print('CALIBRATING STEREO CAMERA\n')
 
     try:
         St = Stereo(LeftData, RightData, app)

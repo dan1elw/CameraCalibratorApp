@@ -2,11 +2,11 @@
 import cv2
 import numpy as np
 
-#####################################################################################################################
+########################################################
 # Class Camera:
 # calibrating the camera
 # need a application of Images first
-#####################################################################################################################
+########################################################
 
 class Camera():
     
@@ -30,6 +30,7 @@ class Camera():
         calibration of the camera
         save all values in CameraParams
         '''
+
         gray = cv2.cvtColor(cv2.imread(self.CameraParams['ImagePfade'][0]), cv2.COLOR_BGR2GRAY)
         g = gray.shape[::-1]
         
@@ -65,7 +66,10 @@ class Camera():
         self.CameraParams['TransVektor'] = tvecs
     
     def Errors(self):
-        ''' Reprojection Errors '''
+        '''
+        Reprojection Errors
+        '''
+
         objp = np.array(self.CameraParams['Objpoints'][0])
         imgp = np.array(self.CameraParams['Imgpoints'])
         imgp = imgp.reshape((imgp.shape[0], imgp.shape[1], imgp.shape[3]))
@@ -106,7 +110,10 @@ class Camera():
         self.CameraParams['Reprojectedpoints'] = imgpNew
     
     def PrintResults(self):
-        ''' write the results in the window '''
+        '''
+        write the results in the window
+        '''
+
         if self.app:
             self.app.scrollarea.print('general data:\n' +
                        '  Image Size:       {} x {}\n'.format(self.CameraParams['ImageSize'][0], self.CameraParams['ImageSize'][1]) +
@@ -140,13 +147,13 @@ class Camera():
             self.app.scrollarea.print('Mean Reprojection Error [Pixel]: '+str(np.round(self.CameraParams['MeanError'],5))+'\n')
         
             if self.CameraParams['MeanError'] > 1:
-                self.app.scrollarea.print('Attention, Reprojection Error over 1!\n', form='warn')
+                self.app.scrollarea.print('Attention, Reprojection Error over 1!\n', format='warn')
 
 
-#####################################################################################################################
+########################################################
 # Class Stereo:
 # calibrating a stereo camera set
-#####################################################################################################################
+########################################################
 
 class Stereo():
     def __init__(self, LeftData, RightData, app=None):
@@ -160,7 +167,10 @@ class Stereo():
         self.PrintResults()
 
     def ExtractCameraParams(self):
-        ''' extract the parameters of the left and right camera '''
+        '''
+        extract the parameters of the left and right camera
+        '''
+
         # general data without präfix
         self.StereoParams['BoardSize'] = self.Left.pop('BoardSize'); self.Right.pop('BoardSize')
         self.StereoParams['SquareSize'] = self.Left.pop('SquareSize'); self.Right.pop('SquareSize')
@@ -177,7 +187,10 @@ class Stereo():
             self.StereoParams[name] = self.Right[Rkey]
     
     def Calibration(self):
-        ''' Calculating the stereo camera parameters '''
+        '''
+        Calculating the stereo camera parameters 
+        '''
+
         obj = self.StereoParams['L_Objpoints']
         img1 = self.StereoParams['L_Imgpoints']
         k1 = self.StereoParams['L_Intrinsic']
@@ -215,7 +228,10 @@ class Stereo():
         # self.StereoParams['R_Distortion'] = D2
     
     def PrintResults(self):
-        ''' plot the results '''
+        '''
+        plot the results
+        '''
+
         if self.app:
             self.app.scrollarea.print('Transformationmatrix:\n'+str(self.StereoParams['Transformation'])+'\n')
             
@@ -228,5 +244,5 @@ class Stereo():
             self.app.scrollarea.print('Overall Mean Reprojection Error: '+str(np.round(self.StereoParams['MeanError'],5))+'\n')
             
             if self.StereoParams['MeanError'] > 1:
-                self.app.scrollarea.print('Attention, Reprojection Error over 1!\n', form='warn')
+                self.app.scrollarea.print('Attention, Reprojection Error over 1!\n', format='warn')
     

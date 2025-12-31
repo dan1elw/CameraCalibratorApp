@@ -3,14 +3,16 @@ import os
 import cv2
 import numpy as np
 
-#####################################################################################################################
+########################################################
 # Class Images:
 # in this class we discribe the calibration images
 # analyze the pictures and detect the points
-#####################################################################################################################
+########################################################
 
 class Images():
-    ''' load and analyze the images '''
+    '''
+    load and analyze the images
+    '''
     
     def __init__(self, path, SquareSize):
         self.ImageData = {}
@@ -26,6 +28,7 @@ class Images():
         read all the files in the directory
         sort by name
         '''
+
         # extract all files
         imagelist = os.listdir(self.ImageData['OrdnerPfad'])
         imagelist = sorted(imagelist)
@@ -54,6 +57,7 @@ class Images():
         possible from min. (3,4) to max. (13,14)
         quadratic is not possible
         '''
+
         self.BoardSizeFehler = False
         imagepath = self.ImageData['ImagePfade'][0]
         img = cv2.imread(imagepath)
@@ -95,7 +99,10 @@ class Images():
         self.ImageData['ImageSize'] = tuple(img.shape[:2])
         
     def GetChessboard(self):
-        ''' search for checkerboard and save points '''
+        '''
+        search for checkerboard and save points
+        '''
+
         paths = self.ImageData['ImagePfade']
         boardSize = self.ImageData['BoardSize']
         
