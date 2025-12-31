@@ -107,7 +107,7 @@ class App():
         self.scrollarea.grid(column=0)
         self.scrollarea.tag_config('normal', foreground='black')
         self.scrollarea.tag_config('error', foreground='red')
-        self.scrollarea.tag_config('warn', foreground='#FF8000')
+        self.scrollarea.tag_config('warn', foreground="#FF4D00")
         self.createMenu()
         self.ClearConsole()
         
