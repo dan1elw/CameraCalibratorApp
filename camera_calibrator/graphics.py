@@ -398,7 +398,7 @@ class App():
     def InfoAfterCalibration(self):
         if not self.CalibrationCompleted:
             return
-        
+        return
         self.scrollarea.print('INFORMATION:\n')
         self.scrollarea.print('- export parameters before closing the window!',1)
         self.scrollarea.print('  Menu -> Options -> Save Parameters\n',1)
