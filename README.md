@@ -1,54 +1,82 @@
-# CameraCalibratorApp
+Camera Calibrator App
+=====================
 
-An app for calibration of a camera or stereo-camera with OpenCV.
+Project that helps calibrate a camera using calibration images, visualize detected corners, and export camera intrinsics and distortion parameters.
 
-## Setup
+Quick overview
+--------------
+- Purpose: assist with camera intrinsic and distortion calibration using standard chessboard patterns, plus provide simple visualization and a console-based workflow.
+- Language: Python
+- Run: `python main.py`
 
-Install the Python dependencies and (optionally) system GUI packages.
+Module layout
+-------------
+The code lives in the `camera_calibrator` package. Key modules:
 
-Run via pip:
+- `camera_calibrator/cal.py`: Core calibration routines. Detects chessboard corners across image pairs or sets, calculates intrinsic matrix, distortion coefficients, reprojection error, and exports results.
+- `camera_calibrator/camera.py`: Representation of a calibrated camera and helpers for applying and removing distortion, saving/loading calibration parameters.
+- `camera_calibrator/image.py`: Image loading, preprocessing, and utilities for converting and handling image sets used for calibration.
+- `camera_calibrator/graphics.py`: Visualization helpers — drawing detected corners, reprojection points, and overlaying results for inspection.
+- `camera_calibrator/console.py`: Simple CLI/console interface for running calibration workflows, stepping through image sets, and saving results.
+- `camera_calibrator/__init__.py`: Package exports and version metadata.
+
+Example data
+------------
+Example chessboard image sets are included under the `example/` directory:
+
+- `example/example_left_30mm/`
+- `example/example_right_30mm/`
+
+These are sample image folders for testing the calibration pipeline.
+
+Features
+--------
+- Detect chessboard corners in image sets (single or stereo image pairs).
+- Compute camera intrinsics (focal length, principal point) and distortion coefficients.
+- Provide reprojection error metrics to assess calibration quality.
+- Visualize detected corners and reprojections to validate results.
+- Save and load calibration parameters for later use.
+
+Installation
+------------
+1. Create a Python virtual environment (recommended):
 
 ```bash
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-Or run the bundled installer script (make it executable first if needed):
+2. Install dependencies:
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+pip install -r requirements.txt
 ```
 
-If the GUI fails to start because of missing tkinter on Debian/Ubuntu, run:
+Usage
+-----
+- Run the main application:
 
 ```bash
-sudo apt update && sudo apt install python3-tk
+python main.py
 ```
 
-## Reusing the saved Parameters
+- Use the console interface (if available) to point at image directories, run detection, compute calibration, and save results. Refer to `camera_calibrator/console.py` for available commands and options.
 
-After a successful calibration you can save the calculated parameters with a command in the menu.
-The parametes will be saved in a npz file. 
-To use the stored data you have to run following code in your file.
-All the values are stored as a numpy array and can be used for further calculations.
+Development notes
+-----------------
+- The calibration routines assume chessboard-style calibration images. Adjust detection settings in `camera_calibrator/cal.py` if you use an alternate pattern.
+- Visualization helpers in `camera_calibrator/graphics.py` are lightweight — they draw overlays for inspection but are not a full GUI.
 
-```python
-import numpy as np
-params = dict(np.load('filename.npz'))
-```
+Files to inspect
+----------------
+- See [camera_calibrator/cal.py](camera_calibrator/cal.py) for calibration algorithms.
+- See [camera_calibrator/camera.py](camera_calibrator/camera.py) for the camera parameter model.
+- See [camera_calibrator/console.py](camera_calibrator/console.py) for the CLI workflows.
 
-## Undistort an image with the Parameters
+Contributing
+------------
+- Feel free to open issues or submit pull requests. Keep changes focused and include tests for algorithmic changes where possible.
 
-As an example for the application of the calculated parameters you can undistort an image.
-To realy see the difference between before and after I prefer to use a fisheye camera.
-
-```python
-import cv2
-import numpy as np
-params = dict(np.load('filename.npz'))
-
-path = 'exampleimage.jpg'
-img = cv2.imread(path,0)
-dst = cv2.undistort(img, params['Intrinsic'], params['Distortion'])
-```
+Contact
+-------
+If you need help or want new features, open an issue or contact the repository owner.
