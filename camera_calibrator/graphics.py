@@ -87,14 +87,19 @@ class App():
         self.StatusLabel.grid(row=41, column=0, columnspan=3, sticky='nw')
         
         # CONSOLE
-        self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
-        self.scrollarea.grid(column=0)
-        self.scrollarea.tag_config('normal', foreground='black')
-        self.scrollarea.tag_config('error', foreground='red')
-        self.scrollarea.tag_config('warn', foreground="#FF4D00")
+        #self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
+        #self.scrollarea.grid(column=0)
+        #self.scrollarea.tag_config('normal', foreground='black')
+        #self.scrollarea.tag_config('error', foreground='red')
+        #self.scrollarea.tag_config('warn', foreground="#FF4D00")
+        self.scrollarea = Console(self.console, height=25, width=70)
+        self.scrollarea.VERSIONINDEX = self.VERSIONINDEX
+        self.scrollarea.timepause = self.timepause
+        self.scrollarea.timestopper = self.timestopper
+        self.scrollarea.clear()
+
         self.createMenu()
-        self.ClearConsole()
-        
+
         # VARIABLES
         self.LeftPath = LEFT_PATH
         self.RightPath = RIGHT_PATH
@@ -102,12 +107,12 @@ class App():
         self.CalibrationCompleted = False
         self.CalBegonnen = False
 
-    def Insert(self, text, pause=0, form='normal'):
+    #def Insert(self, text, pause=0, form='normal'):
         '''
         function to plot some text into the console.
         errors are red
         writing in the window is disabled.
-        '''
+        
         self.scrollarea.configure(state='normal')
         if text[:7] == '[ERROR]':
             self.scrollarea.insert(tkinter.END, text, 'error')
@@ -121,10 +126,10 @@ class App():
         # waiting a little bit for smoother output
         if pause == 0:
             self.timestopper += 1
-            time.sleep(self.timepause)
+            time.sleep(self.timepause)'''
         
-    def ClearConsole(self):
-        ''' reset the console to default. '''
+    #def ClearConsole(self):
+        ''' reset the console to default.
         self.scrollarea.configure(state='normal')
         self.scrollarea.delete('1.0', tkinter.END)
         self.Insert("--------------------------------------------------------------------",1)
@@ -132,7 +137,7 @@ class App():
         self.Insert("--------------------------------------------------------------------\n",1)
         self.Insert("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
         self.scrollarea.configure(state='disabled')
-        self.scrollarea.update()
+        self.scrollarea.update() '''
 
     def createMenu(self):
         '''
@@ -189,11 +194,11 @@ class App():
                 npz['R_Imgpoints'] = np.resize(npz.pop('R_Imgpoints'), size)
                 np.savez(file, **npz)
                 
-            self.Insert('\n--------------------------------------------------------------------\n')
-            self.Insert('Parameters saved under:\n{}'.format(file))
-            self.Insert('\n--------------------------------------------------------------------\n')
+            self.scrollarea.print('\n--------------------------------------------------------------------\n')
+            self.scrollarea.print('Parameters saved under:\n{}'.format(file))
+            self.scrollarea.print('\n--------------------------------------------------------------------\n')
         else:
-            self.Insert('[ERROR] No Parameters. Calibrate first!')
+            self.scrollarea.print('[ERROR] No Parameters. Calibrate first!')
         
     def MENUSaveConsole(self):
         ''' save the console content as a txt file '''
@@ -206,9 +211,9 @@ class App():
         f.write(txt)
         f.close()
         
-        self.Insert('\n--------------------------------------------------------------------\n')
-        self.Insert('Log saved under:\n{}'.format(file))
-        self.Insert('\n--------------------------------------------------------------------\n')
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')
+        self.scrollarea.print('Log saved under:\n{}'.format(file))
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')
         
     def MENUNewCalibration(self):
         ''' reset for a new calibration '''
@@ -216,7 +221,7 @@ class App():
         self.SwitchButtonState('NORMAL')
         self.entry.set(30.0)
         self.formframe.update()
-        self.ClearConsole()
+        self.scrollarea.clear()
         
         self.LeftPath = ''
         self.RightPath = ''
@@ -236,23 +241,23 @@ class App():
         txt = 'HELP:\n\n'
         txt += 'for detailed help look at the README file.'
         
-        self.Insert('--------------------------------------------------------------------\n')
-        self.Insert(txt)
-        self.Insert('\n--------------------------------------------------------------------\n')
+        self.scrollarea.print('--------------------------------------------------------------------\n')
+        self.scrollarea.print(txt)
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')
 
     def InputLeft(self):
         ''' input directory of the left camera '''
         self.LeftPath = tkinter.filedialog.askdirectory()
-        self.Insert('Path left camera:')
-        self.Insert(self.LeftPath)
-        self.Insert('')
+        self.scrollarea.print('Path left camera:')
+        self.scrollarea.print(self.LeftPath)
+        self.scrollarea.print('')
         
     def InputRight(self):
         ''' input directory of the right camera '''
         self.RightPath = tkinter.filedialog.askdirectory()
-        self.Insert('Path right camera:')
-        self.Insert(self.RightPath)
-        self.Insert('')
+        self.scrollarea.print('Path right camera:')
+        self.scrollarea.print(self.RightPath)
+        self.scrollarea.print('')
         
     def CheckInput(self):
         ''' check the inputs (directories, square size) '''
@@ -264,7 +269,7 @@ class App():
         try:
             self.SquareSize = self.entry.get()
         except:
-            self.Insert('[ERROR] Fehlerhafte Angabe der Square Size.')
+            self.scrollarea.print('[ERROR] Fehlerhafte Angabe der Square Size.')
             return False
         
         # DIRECTORIES --------------------------------------------------------
@@ -275,7 +280,7 @@ class App():
         # decision if single or stereo camera
         
         if left == '' and right == '':
-            self.Insert('[ERROR] Keine Ordner angegeben.')
+            self.scrollarea.print('[ERROR] Keine Ordner angegeben.')
             return False                
         else:
             self.SingleOrStereo(left, right)
@@ -283,7 +288,7 @@ class App():
         # left and right directory cannot be the same
         
         if left == right:
-            self.Insert('[ERROR] Linker und Rechter Ordner sind identisch')
+            self.scrollarea.print('[ERROR] Linker und Rechter Ordner sind identisch')
             return False
         
         # directories cannot be empty
@@ -295,7 +300,7 @@ class App():
         if self.Art=='Stereo' or self.Seite=='L':
             l = os.listdir(left)
             if len(l) == 0:
-                self.Insert('[ERROR] Linker Ordner ist leer.')
+                self.scrollarea.print('[ERROR] Linker Ordner ist leer.')
                 return False
             
             endsL = []
@@ -304,17 +309,17 @@ class App():
                 
             endsL = list(set(endsL))
             if len(endsL) != 1:
-                self.Insert('[ERROR] Im linken Ordner existieren mehrere Dateitypen.')
+                self.scrollarea.print('[ERROR] Im linken Ordner existieren mehrere Dateitypen.')
                 return False
             
             if not endsL[0].lower() in types:
-                self.Insert('[ERROR] Ungültiger Dateityp: {}'.format(endsL[0].lower()))
+                self.scrollarea.print('[ERROR] Ungültiger Dateityp: {}'.format(endsL[0].lower()))
                 return False
             
         if self.Art=='Stereo' or self.Seite=='R':
             r = os.listdir(right)
             if len(r) == 0:
-                self.Insert('[ERROR] Rechter Ordner ist leer.')
+                self.scrollarea.print('[ERROR] Rechter Ordner ist leer.')
                 return False
             
             endsR = []
@@ -323,18 +328,18 @@ class App():
                 
             endsR = list(set(endsR))
             if len(endsR) != 1:
-                self.Insert('[ERROR] Im rechten Ordner existieren mehrere Dateitypen.')
+                self.scrollarea.print('[ERROR] Im rechten Ordner existieren mehrere Dateitypen.')
                 return False
             
             if not endsR[0].lower() in types:
-                self.Insert('[ERROR] Ungültiger Dateityp: {}'.format(endsR[0].lower()))
+                self.scrollarea.print('[ERROR] Ungültiger Dateityp: {}'.format(endsR[0].lower()))
                 return False
             
         # same number of images for both cameras for stereo calibration
         
         if self.Art == 'Stereo':
             if len(l) != len(r):
-                self.Insert('[ERROR] Pro Kamera müssen gleich viele Bilder existieren.')
+                self.scrollarea.print('[ERROR] Pro Kamera müssen gleich viele Bilder existieren.')
                 return False
         
         return True
@@ -355,7 +360,7 @@ class App():
     def StartButton(self):
         if self.CheckInput():
             
-            self.ClearConsole()
+            self.scrollarea.clear()
             self.CalBegonnen = True
             self.StatusLabelText.set('Calibrating. Please wait ...')
             self.SwitchButtonState('DISABLED')
@@ -363,16 +368,16 @@ class App():
             if self.Art == 'Stereo':
                 
                 self.StartTime = time.perf_counter(); self.timestopper = 0
-                self.Insert('--------------------------------------------------------------------\n')
-                self.Insert('INPUT PARAMETERS:\n')
-                self.Insert('Path left camera:')
-                self.Insert(self.LeftPath); self.Insert('')
-                self.Insert('Path right camera:')
-                self.Insert(self.RightPath); self.Insert('')
-                self.Insert('Square Size: {} mm\n'.format(self.SquareSize))
-                self.Insert('--------------------------------------------------------------------\n')
-                self.Insert('STEREO CAMERA CALIBRATION\n')
-                self.Insert('--------------------------------------------------------------------\n')
+                self.scrollarea.print('--------------------------------------------------------------------\n')
+                self.scrollarea.print('INPUT PARAMETERS:\n')
+                self.scrollarea.print('Path left camera:')
+                self.scrollarea.print(self.LeftPath); self.scrollarea.print('')
+                self.scrollarea.print('Path right camera:')
+                self.scrollarea.print(self.RightPath); self.scrollarea.print('')
+                self.scrollarea.print('Square Size: {} mm\n'.format(self.SquareSize))
+                self.scrollarea.print('--------------------------------------------------------------------\n')
+                self.scrollarea.print('STEREO CAMERA CALIBRATION\n')
+                self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.StereoParams = StereoCamera(self, self.LeftPath, self.RightPath, self.SquareSize)
                 
                 if not self.StereoParams == None:
@@ -381,22 +386,22 @@ class App():
                     
                 if self.CalibrationCompleted:
                     end = time.perf_counter() - self.StartTime - self.timestopper * self.timepause
-                    self.Insert('time for calibration: {:.4f} seconds\n'.format(end))
-                    self.Insert('--------------------------------------------------------------------\n')
-                    self.Insert('CALIBRATION COMPLETED\n')
-                    self.Insert('--------------------------------------------------------------------\n')
+                    self.scrollarea.print('time for calibration: {:.4f} seconds\n'.format(end))
+                    self.scrollarea.print('--------------------------------------------------------------------\n')
+                    self.scrollarea.print('CALIBRATION COMPLETED\n')
+                    self.scrollarea.print('--------------------------------------------------------------------\n')
                     
             elif self.Art == 'Single':
                 
                 self.StartTime = time.perf_counter(); self.timestopper = 0
-                self.Insert('--------------------------------------------------------------------\n')
-                self.Insert('INPUT PARAMETERS:\n')
-                self.Insert('Path camera:')
-                self.Insert(self.SinglePath); self.Insert('')
-                self.Insert('Square Size: {} mm\n'.format(self.SquareSize))
-                self.Insert('--------------------------------------------------------------------\n')
-                self.Insert('SINGLE CAMERA CALIBRATION\n')
-                self.Insert('--------------------------------------------------------------------\n')
+                self.scrollarea.print('--------------------------------------------------------------------\n')
+                self.scrollarea.print('INPUT PARAMETERS:\n')
+                self.scrollarea.print('Path camera:')
+                self.scrollarea.print(self.SinglePath); self.scrollarea.print('')
+                self.scrollarea.print('Square Size: {} mm\n'.format(self.SquareSize))
+                self.scrollarea.print('--------------------------------------------------------------------\n')
+                self.scrollarea.print('SINGLE CAMERA CALIBRATION\n')
+                self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.CameraParams = SingleCamera(self, self.SinglePath, self.SquareSize)
                 
                 if not self.CameraParams == None:
@@ -405,10 +410,10 @@ class App():
                     
                 if self.CalibrationCompleted:
                     end = time.perf_counter() - self.StartTime - self.timestopper * self.timepause
-                    self.Insert('time for calibration: {:.4f} seconds\n'.format(end))
-                    self.Insert('--------------------------------------------------------------------\n',)
-                    self.Insert('CALIBRATION COMPLETED\n')
-                    self.Insert('--------------------------------------------------------------------\n')
+                    self.scrollarea.print('time for calibration: {:.4f} seconds\n'.format(end))
+                    self.scrollarea.print('--------------------------------------------------------------------\n')
+                    self.scrollarea.print('CALIBRATION COMPLETED\n')
+                    self.scrollarea.print('--------------------------------------------------------------------\n')
                     
             if self.CalibrationCompleted == False:
                 self.StatusLabelText.set('Error while calibrating.')
@@ -431,10 +436,53 @@ class App():
         if not self.CalibrationCompleted:
             return
         
-        self.Insert('INFORMATION:\n')
-        self.Insert('- export parameters before closing the window!',1)
-        self.Insert('  Menu -> Options -> Save Parameters\n',1)
-        self.Insert('- displayed values are rounded.',1)
-        self.Insert('  saved with all decimal places.',1)
+        self.scrollarea.print('INFORMATION:\n')
+        self.scrollarea.print('- export parameters before closing the window!',1)
+        self.scrollarea.print('  Menu -> Options -> Save Parameters\n',1)
+        self.scrollarea.print('- displayed values are rounded.',1)
+        self.scrollarea.print('  saved with all decimal places.',1)
         
-        self.Insert('\n--------------------------------------------------------------------\n',1)
+        self.scrollarea.print('\n--------------------------------------------------------------------\n',1)
+
+class Console(ScrolledText):
+    def __init__(self, console, height=25, width=70):
+        super().__init__(console, state='disabled', wrap=tkinter.WORD, height=height, width=width)
+        #self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
+        self.grid(column=0)
+        self.tag_config('normal', foreground='black')
+        self.tag_config('error', foreground='red')
+        self.tag_config('warn', foreground="#FF4D00")
+    
+    def clear(self):
+        '''
+        reset the console to default
+        '''
+        self.configure(state='normal')
+        self.delete('1.0', tkinter.END)
+        self.print("--------------------------------------------------------------------",1)
+        self.print("Camera Calibrator App\n\nCreated by dan1elw.\nhttps://github.com/dan1elw\nCopyright 2022. Version {}".format(self.VERSIONINDEX),1)
+        self.print("--------------------------------------------------------------------\n",1)
+        self.print("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
+        self.configure(state='disabled')
+        self.update()
+
+    def print(self, text, pause=0, format='normal'):
+        '''
+        function to plot some text into the console.
+        errors are red
+        writing in the window is disabled.
+        '''
+        self.configure(state='normal')
+        if text[:7] == '[ERROR]':
+            self.insert(tkinter.END, text, 'error')
+        else:
+            self.insert(tkinter.END, text, format)
+        self.insert(tkinter.END, '\n')
+        self.configure(state='disabled')
+        self.yview(tkinter.END)
+        self.update()
+        
+        # waiting a little bit for smoother output
+        if pause == 0:
+            self.timestopper += 1
+            time.sleep(self.timepause)

@@ -11,35 +11,35 @@ def SingleCamera(app, path, SquareSize):
         Image = Images(path, SquareSize)
         ImageData = Image.ImageData
     except:
-        app.Insert('[ERROR] Error while analyzing the images.')
+        app.scrollarea.print('[ERROR] Error while analyzing the images.')
         return None
     if Image.BoardSizeFehler == True:
-        app.Insert('[ERROR] Error while detecting the Board Size.')
+        app.scrollarea.print('[ERROR] Error while detecting the Board Size.')
         return None
     try:
         Cam = Camera(ImageData, app)
         CameraData = Cam.CameraParams
         return CameraData
     except:
-        app.Insert('[ERROR] Error while Calibration.')
+        app.scrollarea.print('[ERROR] Error while Calibration.')
         return None
     
 def StereoCamera(app, pathL, pathR, SquareSize):
-    app.Insert('CALIBRATION LEFT CAMERAA\n')
+    app.scrollarea.print('CALIBRATION LEFT CAMERAA\n')
     
     LeftData = SingleCamera(app, pathL, SquareSize)
     if LeftData == None:
         return None
     
-    app.Insert('--------------------------------------------------------------------\n')
-    app.Insert('CALIBRATION RIGHT CAMERA\n')
+    app.scrollarea.print('--------------------------------------------------------------------\n')
+    app.scrollarea.print('CALIBRATION RIGHT CAMERA\n')
     
     RightData = SingleCamera(app, pathR, SquareSize)
     if RightData == None:
         return None
     
-    app.Insert('--------------------------------------------------------------------\n')
-    app.Insert('CALIBRATING THE STEREO CAMERA\n')
+    app.scrollarea.print('--------------------------------------------------------------------\n')
+    app.scrollarea.print('CALIBRATING THE STEREO CAMERA\n')
 
     try:
         St = Stereo(LeftData, RightData, app)
@@ -47,6 +47,6 @@ def StereoCamera(app, pathL, pathR, SquareSize):
         return StereoData
     
     except:
-        app.Insert('[ERROR] Error while calibrating the stereo camera.')
+        app.scrollarea.print('[ERROR] Error while calibrating the stereo camera.')
         return None
     

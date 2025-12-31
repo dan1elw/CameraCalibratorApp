@@ -108,39 +108,40 @@ class Camera():
     def PrintResults(self):
         ''' write the results in the window '''
         if self.app:
-            self.app.Insert('general data:\n' +
+            self.app.scrollarea.print('general data:\n' +
                        '  Image Size:       {} x {}\n'.format(self.CameraParams['ImageSize'][0], self.CameraParams['ImageSize'][1]) +
                        '  Board Size:       {} x {}\n'.format(self.CameraParams['BoardSize'][0], self.CameraParams['BoardSize'][1]) +
                        '  Image Quantaty:   {}\n'.format(len(self.CameraParams['Objpoints'])) + 
                        '  Points per Image: {}\n'.format(self.CameraParams['Objpoints'][0].shape[0]))
         
-            self.app.Insert('Intrinsic Matrix:\n'+str(self.CameraParams['Intrinsic'])+'\n')
+            self.app.scrollarea.print('Intrinsic Matrix:\n'+str(self.CameraParams['Intrinsic'])+'\n')
         
             D = np.round(self.CameraParams['Distortion'],5)[0]
             if D.shape[0] > 5:
-                self.app.Insert('Distortion:\n'+
+                self.app.scrollarea.print('Distortion:\n'+
                            '  radial:     '+str(D[0])+' '+str(D[1])+' '+str(D[4])+' '+str(D[5])+' '+str(D[6])+' '+str(D[7])+'\n'
                            '  tangential: '+str(D[2])+' '+str(D[3])+'\n')
             else:
-                self.app.Insert('Distortion:\n'+
+                self.app.scrollarea.print('Distortion:\n'+
                            '  radial:     '+str(D[0])+'  '+str(D[1])+'  '+str(D[4])+'\n'
                            '  tangential: '+str(D[2])+'  '+str(D[3])+'\n')
 
-            self.app.Insert('Extrinsic Matrices:')
+            self.app.scrollarea.print('Extrinsic Matrices:')
             for i in range(len(self.CameraParams['Extrinsics'])):
                 t = self.CameraParams['Extrinsics'][i]
-                self.app.Insert('from Image '+str(i+1)+': ({})\n'.format(self.ImageNamesRaw[i])+str(t)+'\n')
+                self.app.scrollarea.print('from Image '+str(i+1)+': ({})\n'.format(self.ImageNamesRaw[i])+str(t)+'\n')
                 
-            self.app.Insert('Mean Reprojection Error per Image [Pixel]:')
+            self.app.scrollarea.print('Mean Reprojection Error per Image [Pixel]:')
             k = 1
             for e in self.CameraParams['Errors']:
-                self.app.Insert(' {:3}) {:<10.6f}'.format(k, e), 1)
+                self.app.scrollarea.print(' {:3}) {:<10.6f}'.format(k, e), 1)
                 k += 1
-            self.app.Insert('')
-            self.app.Insert('Mean Reprojection Error [Pixel]: '+str(np.round(self.CameraParams['MeanError'],5))+'\n')
+            self.app.scrollarea.print('')
+            self.app.scrollarea.print('Mean Reprojection Error [Pixel]: '+str(np.round(self.CameraParams['MeanError'],5))+'\n')
         
             if self.CameraParams['MeanError'] > 1:
-                self.app.Insert('Attention, Reprojection Error over 1!\n', form='warn')
+                self.app.scrollarea.print('Attention, Reprojection Error over 1!\n', form='warn')
+
 
 #####################################################################################################################
 # Class Stereo:
@@ -216,16 +217,16 @@ class Stereo():
     def PrintResults(self):
         ''' plot the results '''
         if self.app:
-            self.app.Insert('Transformationmatrix:\n'+str(self.StereoParams['Transformation'])+'\n')
+            self.app.scrollarea.print('Transformationmatrix:\n'+str(self.StereoParams['Transformation'])+'\n')
             
-            self.app.Insert('Essentialmatrix:\n'+str(self.StereoParams['Essential'])+'\n')
+            self.app.scrollarea.print('Essentialmatrix:\n'+str(self.StereoParams['Essential'])+'\n')
             
             np.set_printoptions(suppress=False, precision=5)
-            self.app.Insert('Fundamentalmatrix:\n'+str(self.StereoParams['Fundamental'])+'\n')
+            self.app.scrollarea.print('Fundamentalmatrix:\n'+str(self.StereoParams['Fundamental'])+'\n')
             np.set_printoptions(suppress=True, precision=5)
             
-            self.app.Insert('Overall Mean Reprojection Error: '+str(np.round(self.StereoParams['MeanError'],5))+'\n')
+            self.app.scrollarea.print('Overall Mean Reprojection Error: '+str(np.round(self.StereoParams['MeanError'],5))+'\n')
             
             if self.StereoParams['MeanError'] > 1:
-                self.app.Insert('Attention, Reprojection Error over 1!\n', form='warn')
+                self.app.scrollarea.print('Attention, Reprojection Error over 1!\n', form='warn')
     
