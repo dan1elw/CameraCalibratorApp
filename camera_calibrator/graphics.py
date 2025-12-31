@@ -87,11 +87,6 @@ class App():
         self.StatusLabel.grid(row=41, column=0, columnspan=3, sticky='nw')
         
         # CONSOLE
-        #self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
-        #self.scrollarea.grid(column=0)
-        #self.scrollarea.tag_config('normal', foreground='black')
-        #self.scrollarea.tag_config('error', foreground='red')
-        #self.scrollarea.tag_config('warn', foreground="#FF4D00")
         self.scrollarea = Console(self.console, height=25, width=70)
         self.scrollarea.VERSIONINDEX = self.VERSIONINDEX
         self.scrollarea.timepause = self.timepause
@@ -106,38 +101,6 @@ class App():
         self.Art = ''
         self.CalibrationCompleted = False
         self.CalBegonnen = False
-
-    #def Insert(self, text, pause=0, form='normal'):
-        '''
-        function to plot some text into the console.
-        errors are red
-        writing in the window is disabled.
-        
-        self.scrollarea.configure(state='normal')
-        if text[:7] == '[ERROR]':
-            self.scrollarea.insert(tkinter.END, text, 'error')
-        else:
-            self.scrollarea.insert(tkinter.END, text, form)
-        self.scrollarea.insert(tkinter.END, '\n')
-        self.scrollarea.configure(state='disabled')
-        self.scrollarea.yview(tkinter.END)
-        self.scrollarea.update()
-        
-        # waiting a little bit for smoother output
-        if pause == 0:
-            self.timestopper += 1
-            time.sleep(self.timepause)'''
-        
-    #def ClearConsole(self):
-        ''' reset the console to default.
-        self.scrollarea.configure(state='normal')
-        self.scrollarea.delete('1.0', tkinter.END)
-        self.Insert("--------------------------------------------------------------------",1)
-        self.Insert("Camera Calibrator App\n\nCreated by dan1elw.\nhttps://github.com/dan1elw\nCopyright 2022. Version {}".format(self.VERSIONINDEX),1)
-        self.Insert("--------------------------------------------------------------------\n",1)
-        self.Insert("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
-        self.scrollarea.configure(state='disabled')
-        self.scrollarea.update() '''
 
     def createMenu(self):
         '''
@@ -388,7 +351,7 @@ class App():
                     end = time.perf_counter() - self.StartTime - self.timestopper * self.timepause
                     self.scrollarea.print('time for calibration: {:.4f} seconds\n'.format(end))
                     self.scrollarea.print('--------------------------------------------------------------------\n')
-                    self.scrollarea.print('CALIBRATION COMPLETED\n')
+                    self.scrollarea.print('CALIBRATION SUCCESSFULL\n', format='success')
                     self.scrollarea.print('--------------------------------------------------------------------\n')
                     
             elif self.Art == 'Single':
@@ -412,7 +375,7 @@ class App():
                     end = time.perf_counter() - self.StartTime - self.timestopper * self.timepause
                     self.scrollarea.print('time for calibration: {:.4f} seconds\n'.format(end))
                     self.scrollarea.print('--------------------------------------------------------------------\n')
-                    self.scrollarea.print('CALIBRATION COMPLETED\n')
+                    self.scrollarea.print('CALIBRATION SUCCESSFULL\n', format='success')
                     self.scrollarea.print('--------------------------------------------------------------------\n')
                     
             if self.CalibrationCompleted == False:
@@ -449,9 +412,10 @@ class Console(ScrolledText):
         super().__init__(console, state='disabled', wrap=tkinter.WORD, height=height, width=width)
         #self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
         self.grid(column=0)
-        self.tag_config('normal', foreground='black')
-        self.tag_config('error', foreground='red')
-        self.tag_config('warn', foreground="#FF4D00")
+        self.tag_config('normal', foreground="#000000")
+        self.tag_config('success', foreground="#13D60C")
+        self.tag_config('error', foreground="#FF0000")
+        self.tag_config('warn', foreground="#FFB217")
     
     def clear(self):
         '''
