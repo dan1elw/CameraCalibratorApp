@@ -172,7 +172,7 @@ class App():
             self.scrollarea.print('[ERROR] No Parameters. Calibrate first!')
         
     def _menu_save_log(self):
-        self.save_log()
+        self.save_log(mode='manuall')
         
     def _menu_new_calibration(self):
         '''
@@ -373,6 +373,7 @@ class App():
                     self.scrollarea.print('--------------------------------------------------------------------\n')
                     self.scrollarea.print('CALIBRATION SUCCESSFULL\n', format='success')
                     self.scrollarea.print('--------------------------------------------------------------------\n')
+                    self.save_log(mode='auto')
                     
             elif self.Art == 'Single':
                 
@@ -397,6 +398,7 @@ class App():
                     self.scrollarea.print('--------------------------------------------------------------------\n')
                     self.scrollarea.print('CALIBRATION SUCCESSFULL\n', format='success')
                     self.scrollarea.print('--------------------------------------------------------------------\n')
+                    self.save_log(mode='auto')
                     
             if self.CalibrationCompleted == False:
                 self.StatusLabelText.set('Error while calibrating.')
@@ -436,16 +438,29 @@ class App():
         
         self.scrollarea.print('\n--------------------------------------------------------------------\n',1)
 
-    def save_log(self):
+    def save_log(self, mode='manuall'):
         '''
         save the console content as a txt file
         '''
 
-        ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
-        file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
+        # create log file based on mode
+        # manuall: open file dialog
+        # auto: create file with timestamp in working directory
+
+        if mode == 'manuall':
+            ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
+            file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
+            if file=='':
+                return
+        elif mode == 'auto':
+            if not os.path.exists('log'):
+                os.makedirs('log')
+            file = 'log/log_{}.txt'.format(time.strftime('%Y%m%d_%H%M%S'))
+
+        # get text from console
         txt = self.scrollarea.get('1.0', tkinter.END)
-        if file=='':
-            return
+        
+        # write text to file
         f = open(file, 'w')
         f.write(txt)
         f.close()
