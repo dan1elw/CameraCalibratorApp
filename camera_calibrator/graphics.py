@@ -172,22 +172,7 @@ class App():
             self.scrollarea.print('[ERROR] No Parameters. Calibrate first!')
         
     def _menu_save_log(self):
-        '''
-        save the console content as a txt file
-        '''
-
-        ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
-        file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
-        txt = self.scrollarea.get('1.0', tkinter.END)
-        if file=='':
-            return
-        f = open(file, 'w')
-        f.write(txt)
-        f.close()
-        
-        self.scrollarea.print('\n--------------------------------------------------------------------\n')
-        self.scrollarea.print('Log saved under:\n{}'.format(file))
-        self.scrollarea.print('\n--------------------------------------------------------------------\n')
+        self.save_log()
         
     def _menu_new_calibration(self):
         '''
@@ -450,3 +435,21 @@ class App():
         self.scrollarea.print('  saved with all decimal places.',1)
         
         self.scrollarea.print('\n--------------------------------------------------------------------\n',1)
+
+    def save_log(self):
+        '''
+        save the console content as a txt file
+        '''
+
+        ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
+        file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
+        txt = self.scrollarea.get('1.0', tkinter.END)
+        if file=='':
+            return
+        f = open(file, 'w')
+        f.write(txt)
+        f.close()
+        
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')
+        self.scrollarea.print('Log saved under:\n{}'.format(file))
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')
