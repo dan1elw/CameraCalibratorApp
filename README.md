@@ -63,7 +63,6 @@ python3 main.py
 - Visualization helpers in [`camera_calibrator/graphics.py`](camera_calibrator/graphics.py) are lightweight — they draw overlays for inspection but are not a full GUI.
 
 Planned features are:
-- automatic logging
 - ...
 
 ## Contributing
