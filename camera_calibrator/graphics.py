@@ -453,9 +453,9 @@ class App():
             if file=='':
                 return
         elif mode == 'auto':
-            if not os.path.exists('log'):
-                os.makedirs('log')
-            file = 'log/log_{}.txt'.format(time.strftime('%Y%m%d_%H%M%S'))
+            if not os.path.exists('.log'):
+                os.makedirs('.log')
+            file = '.log/log_{}.txt'.format(time.strftime('%Y%m%d_%H%M%S'))
 
         # get text from console
         txt = self.scrollarea.get('1.0', tkinter.END)

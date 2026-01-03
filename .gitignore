@@ -1,7 +1,7 @@
 # .gitignore — generated for this Python project
 
 # custom gitignore rules can be added here
-log/
+.log/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
