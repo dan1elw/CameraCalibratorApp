@@ -1,7 +1,6 @@
 # IMPORTS
 import tkinter
 import tkinter.filedialog
-from tkinter.scrolledtext import ScrolledText
 from tkinter import ttk, HORIZONTAL, VERTICAL
 import time
 import os
@@ -9,13 +8,14 @@ import numpy as np
 
 # INTERNAL IMPORTS
 from .cal import SingleCamera, StereoCamera
+from .console import Console
 
 # VARIABLES
 #from .__init__ import LEFT_PATH, RIGHT_PATH, SQUARE_SIZE
 LEFT_PATH = './example/example_left_30mm/'
 RIGHT_PATH = './example/example_right_30mm/'
 SQUARE_SIZE = 30.0  # in mm
-VERSIONINDEX = '1.2.0'
+VERSIONINDEX = '1.2.1'
 
 # SETTINGS
 np.set_printoptions(suppress=True, precision=5)
@@ -68,10 +68,10 @@ class App():
         ttk.Label(self.formframe, text='Directories:', font='TkDefaultFont 12 bold').grid(row=10, column=0, columnspan=3, sticky='nw')
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=11, column=0, sticky='nw')
         ttk.Label(self.formframe, text='left camera:                ').grid(row=15, column=0, sticky='w')
-        self.InputButtonLeft = ttk.Button(self.formframe, text='Durchsuchen', command=self.InputLeft)
+        self.InputButtonLeft = ttk.Button(self.formframe, text='Search', command=lambda: self._input_folders(direction='left'))
         self.InputButtonLeft.grid(row=15,column=1,sticky='nw')
         ttk.Label(self.formframe, text='right camera:').grid(row=16, column=0 ,sticky='w')
-        self.InputButtonRight = ttk.Button(self.formframe, text='Durchsuchen', command=self.InputRight)
+        self.InputButtonRight = ttk.Button(self.formframe, text='Search', command=lambda: self._input_folders(direction='right'))
         self.InputButtonRight.grid(row=16,column=1,sticky='nw')
         
         ttk.Label(self.formframe, text=' ').grid(row=20, column=0 ,sticky='nw')
@@ -172,22 +172,7 @@ class App():
             self.scrollarea.print('[ERROR] No Parameters. Calibrate first!')
         
     def _menu_save_log(self):
-        '''
-        save the console content as a txt file
-        '''
-
-        ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
-        file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
-        txt = self.scrollarea.get('1.0', tkinter.END)
-        if file=='':
-            return
-        f = open(file, 'w')
-        f.write(txt)
-        f.close()
-        
-        self.scrollarea.print('\n--------------------------------------------------------------------\n')
-        self.scrollarea.print('Log saved under:\n{}'.format(file))
-        self.scrollarea.print('\n--------------------------------------------------------------------\n')
+        self.save_log(mode='manuall')
         
     def _menu_new_calibration(self):
         '''
@@ -227,25 +212,21 @@ class App():
         self.scrollarea.print(txt)
         self.scrollarea.print('\n--------------------------------------------------------------------\n')
 
-    def InputLeft(self):
+    def _input_folders(self, direction=None):
         '''
-        input directory of the left camera
-        '''
-
-        self.LeftPath = tkinter.filedialog.askdirectory()
-        self.scrollarea.print('Path left camera:')
-        self.scrollarea.print(self.LeftPath)
-        self.scrollarea.print('')
-        
-    def InputRight(self):
-        '''
-        input directory of the right camera
+        input directory of the camera(s)
         '''
 
-        self.RightPath = tkinter.filedialog.askdirectory()
-        self.scrollarea.print('Path right camera:')
-        self.scrollarea.print(self.RightPath)
-        self.scrollarea.print('')
+        if direction == 'left':
+            self.LeftPath = tkinter.filedialog.askdirectory()
+            self.scrollarea.print('Path left camera:')
+            self.scrollarea.print(self.LeftPath)
+            self.scrollarea.print('')
+        elif direction == 'right':
+            self.RightPath = tkinter.filedialog.askdirectory()
+            self.scrollarea.print('Path right camera:')
+            self.scrollarea.print(self.RightPath)
+            self.scrollarea.print('')
         
     def CheckInput(self):
         '''
@@ -271,8 +252,15 @@ class App():
         
         if left == '' and right == '':
             self.scrollarea.print('[ERROR] Keine Ordner angegeben.')
-            return False                
+            return False
+        elif left == '()' and right == '()':
+            self.scrollarea.print('[ERROR] Keine Ordner angegeben.')
+            return False
         else:
+            if left == '()':
+                left = ''
+            elif right == '()':
+                right = ''
             self.SingleOrStereo(left, right)
             
         # left and right directory cannot be the same
@@ -360,7 +348,7 @@ class App():
             
             self.scrollarea.clear()
             self.CalBegonnen = True
-            self.StatusLabelText.set('Calibrating. Please wait ...')
+            self.StatusLabelText.set('calibrating, please wait ...')
             self.SwitchButtonState('DISABLED')
             
             if self.Art == 'Stereo':
@@ -368,10 +356,8 @@ class App():
                 self.StartTime = time.perf_counter(); self.timestopper = 0
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('INPUT PARAMETERS:\n')
-                self.scrollarea.print('Path left camera:')
-                self.scrollarea.print(self.LeftPath); self.scrollarea.print('')
-                self.scrollarea.print('Path right camera:')
-                self.scrollarea.print(self.RightPath); self.scrollarea.print('')
+                self.scrollarea.print('Source folder left camera: {}'.format(self.LeftPath))
+                self.scrollarea.print('Source folder right camera: {}'.format(self.RightPath))
                 self.scrollarea.print('Square Size: {} mm\n'.format(self.SquareSize))
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('STEREO CAMERA CALIBRATION\n')
@@ -388,14 +374,14 @@ class App():
                     self.scrollarea.print('--------------------------------------------------------------------\n')
                     self.scrollarea.print('CALIBRATION SUCCESSFULL\n', format='success')
                     self.scrollarea.print('--------------------------------------------------------------------\n')
+                    self.save_log(mode='auto')
                     
             elif self.Art == 'Single':
                 
                 self.StartTime = time.perf_counter(); self.timestopper = 0
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('INPUT PARAMETERS:\n')
-                self.scrollarea.print('Path camera:')
-                self.scrollarea.print(self.SinglePath); self.scrollarea.print('')
+                self.scrollarea.print('Source folder: {}'.format(self.SinglePath))
                 self.scrollarea.print('Square Size: {} mm\n'.format(self.SquareSize))
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('SINGLE CAMERA CALIBRATION\n')
@@ -412,6 +398,7 @@ class App():
                     self.scrollarea.print('--------------------------------------------------------------------\n')
                     self.scrollarea.print('CALIBRATION SUCCESSFULL\n', format='success')
                     self.scrollarea.print('--------------------------------------------------------------------\n')
+                    self.save_log(mode='auto')
                     
             if self.CalibrationCompleted == False:
                 self.StatusLabelText.set('Error while calibrating.')
@@ -451,50 +438,33 @@ class App():
         
         self.scrollarea.print('\n--------------------------------------------------------------------\n',1)
 
-class Console(ScrolledText):
-    '''
-    Console class for the output window
-    '''
-
-    def __init__(self, console, height=25, width=70):
-        super().__init__(console, state='disabled', wrap=tkinter.WORD, height=height, width=width)
-        #self.scrollarea = ScrolledText(self.console, state='disabled', wrap=tkinter.WORD, height=25, width=70)
-        self.grid(column=0)
-        self.tag_config('normal', foreground="#000000")
-        self.tag_config('success', foreground="#13D60C")
-        self.tag_config('error', foreground="#FF0000")
-        self.tag_config('warn', foreground="#FFB217")
-    
-    def clear(self):
+    def save_log(self, mode='manuall'):
         '''
-        reset the console to default
+        save the console content as a txt file
         '''
 
-        self.configure(state='normal')
-        self.delete('1.0', tkinter.END)
-        self.print("--------------------------------------------------------------------",1)
-        self.print("Camera Calibrator App\nCreated by Daniel (https://github.com/dan1elw)\nCopyright 2026. Version {}".format(self.VERSIONINDEX),1)
-        self.print("--------------------------------------------------------------------\n",1)
-        self.print("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
-        self.configure(state='disabled')
-        self.update()
+        # create log file based on mode
+        # manuall: open file dialog
+        # auto: create file with timestamp in working directory
 
-    def print(self, text, pause=1, format='normal'):
-        '''
-        function to plot some formatted text into the console.
-        '''
+        if mode == 'manuall':
+            ftypes = [('All files', '*'), ('Text Documents (.txt)', '.txt')]
+            file = tkinter.filedialog.asksaveasfilename(initialfile='CalibrateLog.txt', filetypes=ftypes, defaultextension='.txt')
+            if file=='':
+                return
+        elif mode == 'auto':
+            if not os.path.exists('.log'):
+                os.makedirs('.log')
+            file = '.log/log_{}.txt'.format(time.strftime('%Y%m%d_%H%M%S'))
 
-        self.configure(state='normal')
-        if text[:7] == '[ERROR]':
-            self.insert(tkinter.END, text, 'error')
-        else:
-            self.insert(tkinter.END, text, format)
-        self.insert(tkinter.END, '\n')
-        self.configure(state='disabled')
-        self.yview(tkinter.END)
-        self.update()
+        # get text from console
+        txt = self.scrollarea.get('1.0', tkinter.END)
         
-        # waiting a little bit for smoother output
-        if pause == 1:
-            self.timestopper += 1
-            time.sleep(self.timepause)
+        # write text to file
+        f = open(file, 'w')
+        f.write(txt)
+        f.close()
+        
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')
+        self.scrollarea.print('Log saved under:\n{}'.format(file))
+        self.scrollarea.print('\n--------------------------------------------------------------------\n')

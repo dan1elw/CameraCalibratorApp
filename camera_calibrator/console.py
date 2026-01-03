@@ -1,3 +1,14 @@
+# IMPORTS
+import tkinter
+from tkinter.scrolledtext import ScrolledText
+import time
+
+########################################################
+# Class Console:
+# This class creates a console output window for the
+# camera calibrator application.
+########################################################
+
 class Console(ScrolledText):
     '''
     Console class for the output window
@@ -20,7 +31,7 @@ class Console(ScrolledText):
         self.configure(state='normal')
         self.delete('1.0', tkinter.END)
         self.print("--------------------------------------------------------------------",1)
-        self.print("Camera Calibrator App\n\nCreated by dan1elw.\nhttps://github.com/dan1elw\nCopyright 2022. Version {}".format(self.VERSIONINDEX),1)
+        self.print("Camera Calibrator App\nCreated by Daniel (https://github.com/dan1elw)\nCopyright 2026. Version {}".format(self.VERSIONINDEX),1)
         self.print("--------------------------------------------------------------------\n",1)
         self.print("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
         self.configure(state='disabled')
