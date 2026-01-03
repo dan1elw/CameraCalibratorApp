@@ -15,7 +15,7 @@ from .cal import SingleCamera, StereoCamera
 LEFT_PATH = './example/example_left_30mm/'
 RIGHT_PATH = './example/example_right_30mm/'
 SQUARE_SIZE = 30.0  # in mm
-VERSIONINDEX = '1.3.0'
+VERSIONINDEX = '1.2.0'
 
 # SETTINGS
 np.set_printoptions(suppress=True, precision=5)
@@ -212,8 +212,7 @@ class App():
         popup window with about text
         '''
 
-        COPYRIGHT = 2022  # copyright year
-        txt = 'Camera Calibrator App\nCreated by Daniel Weber. Copyright {}\nVersion {}'.format(COPYRIGHT,self.VERSIONINDEX)
+        txt = "Camera Calibrator App\nCreated by Daniel (https://github.com/dan1elw)\nCopyright 2026. Version {}".format(self.VERSIONINDEX)
         tkinter.messagebox.showinfo('Camera Calibrator App - About',txt)
         
     def _menu_help(self):
@@ -474,7 +473,7 @@ class Console(ScrolledText):
         self.configure(state='normal')
         self.delete('1.0', tkinter.END)
         self.print("--------------------------------------------------------------------",1)
-        self.print("Camera Calibrator App\n\nCreated by dan1elw.\nhttps://github.com/dan1elw\nCopyright 2022. Version {}".format(self.VERSIONINDEX),1)
+        self.print("Camera Calibrator App\nCreated by Daniel (https://github.com/dan1elw)\nCopyright 2026. Version {}".format(self.VERSIONINDEX),1)
         self.print("--------------------------------------------------------------------\n",1)
         self.print("Time: {}\n".format(time.strftime('%d.%m.%Y , %H:%M Uhr')))
         self.configure(state='disabled')
