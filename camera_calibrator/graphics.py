@@ -68,10 +68,10 @@ class App():
         ttk.Label(self.formframe, text='Directories:', font='TkDefaultFont 12 bold').grid(row=10, column=0, columnspan=3, sticky='nw')
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=11, column=0, sticky='nw')
         ttk.Label(self.formframe, text='left camera:                ').grid(row=15, column=0, sticky='w')
-        self.InputButtonLeft = ttk.Button(self.formframe, text='Durchsuchen', command=self.InputLeft)
+        self.InputButtonLeft = ttk.Button(self.formframe, text='Durchsuchen', command=lambda: self._input_folders(direction='left'))
         self.InputButtonLeft.grid(row=15,column=1,sticky='nw')
         ttk.Label(self.formframe, text='right camera:').grid(row=16, column=0 ,sticky='w')
-        self.InputButtonRight = ttk.Button(self.formframe, text='Durchsuchen', command=self.InputRight)
+        self.InputButtonRight = ttk.Button(self.formframe, text='Durchsuchen', command=lambda: self._input_folders(direction='right'))
         self.InputButtonRight.grid(row=16,column=1,sticky='nw')
         
         ttk.Label(self.formframe, text=' ').grid(row=20, column=0 ,sticky='nw')
@@ -212,25 +212,21 @@ class App():
         self.scrollarea.print(txt)
         self.scrollarea.print('\n--------------------------------------------------------------------\n')
 
-    def InputLeft(self):
+    def _input_folders(self, direction=None):
         '''
-        input directory of the left camera
-        '''
-
-        self.LeftPath = tkinter.filedialog.askdirectory()
-        self.scrollarea.print('Path left camera:')
-        self.scrollarea.print(self.LeftPath)
-        self.scrollarea.print('')
-        
-    def InputRight(self):
-        '''
-        input directory of the right camera
+        input directory of the camera(s)
         '''
 
-        self.RightPath = tkinter.filedialog.askdirectory()
-        self.scrollarea.print('Path right camera:')
-        self.scrollarea.print(self.RightPath)
-        self.scrollarea.print('')
+        if direction == 'left':
+            self.LeftPath = tkinter.filedialog.askdirectory()
+            self.scrollarea.print('Path left camera:')
+            self.scrollarea.print(self.LeftPath)
+            self.scrollarea.print('')
+        elif direction == 'right':
+            self.RightPath = tkinter.filedialog.askdirectory()
+            self.scrollarea.print('Path right camera:')
+            self.scrollarea.print(self.RightPath)
+            self.scrollarea.print('')
         
     def CheckInput(self):
         '''
