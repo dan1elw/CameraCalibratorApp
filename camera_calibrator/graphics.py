@@ -68,10 +68,10 @@ class App():
         ttk.Label(self.formframe, text='Directories:', font='TkDefaultFont 12 bold').grid(row=10, column=0, columnspan=3, sticky='nw')
         ttk.Label(self.formframe, text=' ', font='Arial 2').grid(row=11, column=0, sticky='nw')
         ttk.Label(self.formframe, text='left camera:                ').grid(row=15, column=0, sticky='w')
-        self.InputButtonLeft = ttk.Button(self.formframe, text='Durchsuchen', command=lambda: self._input_folders(direction='left'))
+        self.InputButtonLeft = ttk.Button(self.formframe, text='Search', command=lambda: self._input_folders(direction='left'))
         self.InputButtonLeft.grid(row=15,column=1,sticky='nw')
         ttk.Label(self.formframe, text='right camera:').grid(row=16, column=0 ,sticky='w')
-        self.InputButtonRight = ttk.Button(self.formframe, text='Durchsuchen', command=lambda: self._input_folders(direction='right'))
+        self.InputButtonRight = ttk.Button(self.formframe, text='Search', command=lambda: self._input_folders(direction='right'))
         self.InputButtonRight.grid(row=16,column=1,sticky='nw')
         
         ttk.Label(self.formframe, text=' ').grid(row=20, column=0 ,sticky='nw')
@@ -252,8 +252,15 @@ class App():
         
         if left == '' and right == '':
             self.scrollarea.print('[ERROR] Keine Ordner angegeben.')
-            return False                
+            return False
+        elif left == '()' and right == '()':
+            self.scrollarea.print('[ERROR] Keine Ordner angegeben.')
+            return False
         else:
+            if left == '()':
+                left = ''
+            elif right == '()':
+                right = ''
             self.SingleOrStereo(left, right)
             
         # left and right directory cannot be the same
@@ -341,7 +348,7 @@ class App():
             
             self.scrollarea.clear()
             self.CalBegonnen = True
-            self.StatusLabelText.set('Calibrating. Please wait ...')
+            self.StatusLabelText.set('calibrating, please wait ...')
             self.SwitchButtonState('DISABLED')
             
             if self.Art == 'Stereo':
@@ -349,10 +356,8 @@ class App():
                 self.StartTime = time.perf_counter(); self.timestopper = 0
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('INPUT PARAMETERS:\n')
-                self.scrollarea.print('Path left camera:')
-                self.scrollarea.print(self.LeftPath); self.scrollarea.print('')
-                self.scrollarea.print('Path right camera:')
-                self.scrollarea.print(self.RightPath); self.scrollarea.print('')
+                self.scrollarea.print('Source folder left camera: {}'.format(self.LeftPath))
+                self.scrollarea.print('Source folder right camera: {}'.format(self.RightPath))
                 self.scrollarea.print('Square Size: {} mm\n'.format(self.SquareSize))
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('STEREO CAMERA CALIBRATION\n')
@@ -376,8 +381,7 @@ class App():
                 self.StartTime = time.perf_counter(); self.timestopper = 0
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('INPUT PARAMETERS:\n')
-                self.scrollarea.print('Path camera:')
-                self.scrollarea.print(self.SinglePath); self.scrollarea.print('')
+                self.scrollarea.print('Source folder: {}'.format(self.SinglePath))
                 self.scrollarea.print('Square Size: {} mm\n'.format(self.SquareSize))
                 self.scrollarea.print('--------------------------------------------------------------------\n')
                 self.scrollarea.print('SINGLE CAMERA CALIBRATION\n')
