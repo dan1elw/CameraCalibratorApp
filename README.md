@@ -1,4 +1,14 @@
-# Camera Calibrator App
+# OPTIC
+
+```
+ ________  ________  _________  ___  ________     
+|\   __  \|\   __  \|\___   ___\\  \|\   ____\    
+\ \  \|\  \ \  \|\  \|___ \  \_\ \  \ \  \___|    
+ \ \  \\\  \ \   ____\   \ \  \ \ \  \ \  \       
+  \ \  \\\  \ \  \___|    \ \  \ \ \  \ \  \____  
+   \ \_______\ \__\        \ \__\ \ \__\ \_______\
+    \|_______|\|__|         \|__|  \|__|\|_______|
+```
 
 Project that helps calibrate a camera using calibration images with standard chessboard patterns and export camera intrinsics and distortion parameters.
 
