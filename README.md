@@ -1,5 +1,7 @@
 # OPTIC
 
+Optimal Projection & Transformation for Image Calibration
+
 ```
  ________  ________  _________  ___  ________     
 |\   __  \|\   __  \|\___   ___\\  \|\   ____\    
