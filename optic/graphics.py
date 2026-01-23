@@ -15,7 +15,7 @@ from .console import Console
 LEFT_PATH = './example/example_left_30mm/'
 RIGHT_PATH = './example/example_right_30mm/'
 SQUARE_SIZE = 30.0  # in mm
-VERSIONINDEX = '1.2.1'
+VERSIONINDEX = '1.2.2'
 
 # SETTINGS
 np.set_printoptions(suppress=True, precision=5)

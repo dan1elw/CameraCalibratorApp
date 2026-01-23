@@ -1,15 +1,23 @@
 # IMPORTS
 import time
 import tkinter
-from camera_calibrator import *
+from optic import *
 
 ########################################################
 # Main Loop
 ########################################################
 
 if __name__ == '__main__':
+
+    print('\nWelcome to the OPTIC Camera Calibrator!\n')
     
-    print('\nCamera Calibrator App\nStart: {}'.format(time.strftime('%H:%M:%S Uhr')))
+    print(r'   ___  ____ _____ ___ ____ ')
+    print(r'  / _ \|  _ \_   _|_ _/ ___| ')
+    print(r' | | | | |_) || |  | | |     ')
+    print(r' | |_| |  __/ | |  | | |___  ')
+    print(r'  \___/|_|    |_| |___\____| ')
+
+    print('\nStart:  {}'.format(time.strftime('%H:%M:%S Uhr')))
 
     app = App(tkinter.Tk())
     app.master.mainloop()
@@ -19,4 +27,4 @@ if __name__ == '__main__':
     elif app.Art == 'Stereo' and app.CalibrationCompleted == True:
         Params = app.StereoParams
 
-    print('End:  {}'.format(time.strftime('%H:%M:%S Uhr')))
+    print('End:  {}\n'.format(time.strftime('%H:%M:%S Uhr')))
